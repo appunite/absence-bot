@@ -48,7 +48,7 @@ sourcery-routes:
 		--output ./Sources/AbsenceBot/__Generated__/DerivedPartialIsos.swift
 	@echo "  ✅ Generated!"
 
-sourcery-tests: check-sourcery
+sourcery-tests:
 	@echo "  ⚠️  Generating tests..."
 	@.bin/sourcery \
 		--quiet \
