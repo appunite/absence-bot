@@ -1,0 +1,22 @@
+version: '2.1'
+
+services:
+  db:
+    environment:
+      POSTGRES_DB: absencebot_development
+      POSTGRES_USER: postgres
+    image: postgres
+    ports:
+      - '5433:5432'
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:@db:5432/absencebot_development
+    ports:
+      - '8080:8080'

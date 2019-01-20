@@ -1,0 +1,20 @@
+FROM norionomura/swift:421
+
+# postgres
+RUN apt-get update
+RUN apt-get install -y postgresql libpq-dev
+
+ENV OSS 1
+WORKDIR /app
+
+COPY .build/dependencies-state.json ./.build/dependencies-state.json
+COPY .env ./
+COPY Makefile ./
+COPY Package.swift ./
+COPY Packages ./Packages
+COPY Sources ./Sources
+COPY Tests ./Tests
+
+RUN swift package update
+RUN swift build --product Server --configuration release
+CMD ./.build/release/Server
