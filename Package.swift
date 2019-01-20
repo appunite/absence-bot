@@ -4,19 +4,37 @@
 import PackageDescription
 
 let package = Package(
-    name: "AbsenceBot",
-    dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
-            name: "AbsenceBot",
-            dependencies: []),
-        .testTarget(
-            name: "AbsenceBotTests",
-            dependencies: ["AbsenceBot"]),
+  name: "AbsenceBot",
+  products: [
+    .library(name: "AbsenceBot", targets: ["AbsenceBot"]),
+    .executable(name: "Server", targets: ["Server"]),
+  ],
+  dependencies: [
+    .package(url: "https://github.com/pointfreeco/swift-web.git", .branch("0243fbe")),
+    .package(url: "https://github.com/pointfreeco/swift-prelude.git", .branch("8cbc934")),
+    .package(url: "https://github.com/IBM-Swift/Swift-JWT.git", .branch("master"))
+  ],
+  targets: [
+    .target(
+      name: "AbsenceBot",
+      dependencies: [
+        "ApplicativeRouter",
+        "ApplicativeRouterHttpPipelineSupport",
+        "Either",
+        "HttpPipeline",
+        "Optics",
+        "Tuple",
+        "UrlFormEncoding",
+        "SwiftJWT"
+      ]
+    ),
+
+    .target(
+      name: "Server",
+      dependencies: ["AbsenceBot"]),
+
+    .testTarget(
+      name: "AbsenceBotTests",
+      dependencies: ["AbsenceBot"]),
     ]
 )
