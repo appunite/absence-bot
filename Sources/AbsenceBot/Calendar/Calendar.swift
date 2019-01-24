@@ -5,14 +5,14 @@ import Prelude
 import UrlFormEncoding
 import SwiftJWT
 
-public struct Calendar {
+public struct GoogleCalendar {
   /// Fetches Google OAuth access token
   public var fetchAuthToken: () -> EitherIO<Error, Either<OAuthError, AccessToken>>
 
   /// Create
   public var createEvent: (AccessToken, Event) -> EitherIO<Error, Event>
 
-  static let live = Calendar(
+  static let live = GoogleCalendar(
     fetchAuthToken: { AbsenceBot.fetchAuthToken() |> runCalendar} ,
     createEvent: { AbsenceBot.createEvent(with: $0, event: $1) |> runCalendar }
   )
@@ -68,7 +68,7 @@ public struct Calendar {
   }
 }
 
-func fetchAuthToken() -> DecodableRequest<Either<Calendar.OAuthError, Calendar.AccessToken>> {
+func fetchAuthToken() -> DecodableRequest<Either<GoogleCalendar.OAuthError, GoogleCalendar.AccessToken>> {
   var jwt = defaultOAuthPayload(Current.date())
   let jwtString = try! jwt.sign(using: rs256Signer!)
 
@@ -87,7 +87,7 @@ func fetchAuthToken() -> DecodableRequest<Either<Calendar.OAuthError, Calendar.A
   )
 }
 
-func createEvent(with token: Calendar.AccessToken, event: Calendar.Event) -> DecodableRequest<Calendar.Event> {
+func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.Event) -> DecodableRequest<GoogleCalendar.Event> {
   let body = try? calendarJsonEncoder
     .encode(event)
   

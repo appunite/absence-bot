@@ -26,9 +26,12 @@ private func render(conn: Conn<StatusLineOpen, Route>)
         |> writeStatus(.ok)
         >=> respond(text: "Slack!")
     case .dialogflow(let payload):
-      return conn.map(const(payload.name))
+      return conn.map(const(payload))
+        |> testMiddleware
+
+//      return x |> postSlackMiddleware
 //        |> fetchSlackUserMiddleware
-        |> postSlackMiddleware
+//        |> postSlackMiddleware
 //        |> uploadFileSlackMiddleware
 //        |> fetchAccessTokenGoogleMiddleware
 //        >>> requireAccessToken
@@ -60,6 +63,126 @@ public func responseTimeout(_ interval: TimeInterval)
       }
     }
 }
+
+import Html
+public func respond<A>(json: Data) -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
+  return respond(data: json, contentType: .json)
+}
+
+//import MediaType
+public func respond<A>(data: Data, contentType: MediaType)
+  -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
+    
+    return map(const(data)) >>> pure
+      >=> writeHeader(.contentType(contentType))
+      >=> writeHeader(.contentLength(data.count))
+      >=> closeHeaders
+      >=> end
+}
+
+public func respond<A: Encodable>(encoder: JSONEncoder) -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
+  return { conn in
+    conn |> respond(json: try! JSONEncoder().encode(conn.data))
+  }
+}
+
+let testMiddleware: Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> =
+  
+    (writeStatus(.ok) >=> respond(encoder: JSONEncoder()))
+      |> requireSlackUserAndDialogflowResponse
+//    >=>
+
+
+public func testFetchUser(_ conn: Conn<StatusLineOpen, Dialogflow>)
+  -> IO<Conn<StatusLineOpen, Slack.User>> {
+    
+    return Current.slack.fetchUser(conn.data.user!)
+      .run
+      .map(^\.right)
+      .map { conn.map(const($0!.right!.user)) }
+}
+
+
+//func requireSlack<A>(
+//  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Database.User, A>, Data>
+//  )
+//  -> Middleware<StatusLineOpen, ResponseEnded, T2<Database.User?, A>, Data> {
+//
+//    return filterMap(require1 >>> pure, or: loginAndRedirect)
+//      <<< filter(get1 >>> ^\.isAdmin, or: redirect(to: .home))
+//      <| middleware
+//}
+
+
+public func fetchUser<A>(_ conn: Conn<StatusLineOpen, T2<String, A>>)
+  -> IO<Conn<StatusLineOpen, T2<Slack.User?, A>>> {
+    
+    return Current.slack.fetchUser(get1(conn.data))
+      .run
+      .map(^\.right)
+      .map { conn.map(const($0?.right?.user .*. conn.data.second)) }
+}
+
+
+private func requireSlackUserAndDialogflowResponse(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Slack.User, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> {
+  
+  return { conn in
+    guard let user = conn.data.user else {
+      return conn |>
+        writeStatus(.internalServerError) >=>
+        respond(text: "Missing slack user.")
+    }
+
+    return Current.slack.fetchUser(user)
+      .run
+      .flatMap { errorOrUser in
+        switch errorOrUser {
+        case let .right(.right(payload)):
+          return conn.map(const(payload.user))
+            |> middleware
+          
+        case let .right(.left(e)):
+          return conn
+            |> writeStatus(.internalServerError)
+            >=> respond(text: e.error)
+          
+        case let .left(e):
+          return conn
+            |> writeStatus(.internalServerError)
+            >=> respond(text: e.localizedDescription)
+        }
+    }
+  }
+}
+
+//private func dialogflowInterpreterMiddleware(
+//  _ conn: Conn<StatusLineOpen, Dialogflow>
+//  )
+//  -> IO<Conn<ResponseEnded, Data>> {
+//    return Current.slack.fetchUser(conn.data)
+//      .run
+//      .flatMap { errorOrUser in
+//        switch errorOrUser {
+//        case let .right(.right(payload)):
+//          return conn
+//            |> writeStatus(.ok)
+//            >=> respond(text: "\(payload.user.name)")
+//
+//        case let .right(.left(e)):
+//          return conn
+//            |> writeStatus(.internalServerError)
+//            >=> respond(text: e.error)
+//
+//        case let .left(e):
+//          return conn
+//            |> writeStatus(.internalServerError)
+//            >=> respond(text: e.localizedDescription)
+//        }
+//    }
+//}
+
 
 private func fetchSlackUserMiddleware(
   _ conn: Conn<StatusLineOpen, String>

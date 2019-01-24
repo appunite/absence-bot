@@ -31,7 +31,7 @@ public struct Slack {
     public private(set) var email: String
     public private(set) var timezone: TimeZone
     
-    private enum CodingKeys: String, CodingKey {
+    private enum CustomCodingKeys: String, CodingKey {
       case id
       case name = "real_name"
       case profile
@@ -71,9 +71,10 @@ extension Slack.File {
   }
 }
 
+extension Slack.User: Encodable {}
 extension Slack.User: Decodable {
   public init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let container = try decoder.container(keyedBy: CustomCodingKeys.self)
     
     // user basic info
     self.id = try container.decode(String.self, forKey: .id)

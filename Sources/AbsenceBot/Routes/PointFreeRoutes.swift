@@ -25,9 +25,3 @@ private let routers: [Router<Route>] = [
 ]
 
 public let router = routers.reduce(.empty, <|>)
-
-
-public struct Dialogflow: Codable, Equatable {
-  var id: Int
-  var name: String
-}
