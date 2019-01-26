@@ -87,10 +87,9 @@ public func respond<A: Encodable>(encoder: JSONEncoder) -> Middleware<HeadersOpe
 }
 
 let testMiddleware: Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> =
-  
-    (writeStatus(.ok) >=> respond(encoder: JSONEncoder()))
-      |> requireSlackUserAndDialogflowResponse
-//    >=>
+  fulfillmentMiddlleware
+    >>> requireSlackUserAndDialogflowResponse
+    <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
 
 public func testFetchUser(_ conn: Conn<StatusLineOpen, Dialogflow>)
@@ -123,9 +122,26 @@ public func fetchUser<A>(_ conn: Conn<StatusLineOpen, T2<String, A>>)
       .map { conn.map(const($0?.right?.user .*. conn.data.second)) }
 }
 
+private func fulfillmentMiddlleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User?>, Data> {
+
+  return { conn in
+    switch interprete(payload: get1(conn.data), timeZone: TimeZone.current) {
+    case let .complete(_, _, fulfillment):
+      return conn.map(const(fulfillment))
+        |> middleware
+    case let .incomplete(fulfillment):
+      return conn.map(const(fulfillment))
+        |> middleware
+    case .report(_, _):
+      fatalError()
+    }
+  }
+}
 
 private func requireSlackUserAndDialogflowResponse(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Slack.User, Data>
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User?>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> {
   
   return { conn in
@@ -140,7 +156,7 @@ private func requireSlackUserAndDialogflowResponse(
       .flatMap { errorOrUser in
         switch errorOrUser {
         case let .right(.right(payload)):
-          return conn.map(const(payload.user))
+          return conn.map(const(conn.data .*. payload.user))
             |> middleware
           
         case let .right(.left(e)):
