@@ -21,7 +21,7 @@ private let routers: [Router<Route>] = [
 
     // Matches: GET /dialogflow
     .dialogflow
-      <¢> post %> lit("dialogflow") %> jsonBody(Dialogflow.self) <% end,
+      <¢> post %> lit("dialogflow") %> jsonBody(Dialogflow.self, decoder: dialogflowJsonDecoder) <% end,
 ]
 
 public let router = routers.reduce(.empty, <|>)

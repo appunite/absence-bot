@@ -260,3 +260,23 @@ extension ContextName: Codable {
   }
 }
 
+public let dialogflowJsonDecoder: JSONDecoder = { () in
+  let decoder = JSONDecoder()
+  
+  if #available(OSX 10.12, *) {
+    decoder.dateDecodingStrategy = .iso8601
+  } else {
+    fatalError()
+  }
+  
+  return decoder
+}()
+
+
+//private let iso8601 = ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
+//  >>> ((\DateFormatter.locale) .~ Locale(identifier: "en_US_POSIX"))
+//  >>> ((\DateFormatter.timeZone) .~ TimeZone(abbreviation: "GMT"))
+//
+//private let iso8601DateFormatter = DateFormatter()
+//  |> iso8601
+//  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"

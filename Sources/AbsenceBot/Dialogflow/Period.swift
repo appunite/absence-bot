@@ -66,3 +66,5 @@ extension Period {
         }
     }
 }
+
+extension Period: Codable {}
