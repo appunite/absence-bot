@@ -4,6 +4,7 @@ public struct EnvVars: Codable {
   public var appEnv = AppEnv.development
   public var baseUrl = URL(string: "http://localhost:8080")!
   public var port = 8080
+  public var basicAuth = BasicAuth()
   public var google = Google()
   public var slack = Slack()
   public var postgres = Postgres()
@@ -19,6 +20,16 @@ public struct EnvVars: Codable {
     case production
     case staging
     case testing
+  }
+
+  public struct BasicAuth: Codable {
+    public var username = "hello"
+    public var password = "world"
+    
+    private enum CodingKeys: String, CodingKey {
+      case username = "BASIC_AUTH_USERNAME"
+      case password = "BASIC_AUTH_PASSWORD"
+    }
   }
 
   public struct Slack: Codable {
