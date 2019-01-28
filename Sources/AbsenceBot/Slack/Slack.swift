@@ -12,15 +12,15 @@ public struct Slack {
   public var uploadFile: (File) -> EitherIO<Error, Either<SlackError, StatusPayload>>
 
   /// Post message on channel
-  public var postMessage: (String, String) -> EitherIO<Error, Either<SlackError, StatusPayload>>
+  public var postMessage: (Message) -> EitherIO<Error, Either<SlackError, StatusPayload>>
 
   static let live = Slack(
     fetchUser: AbsenceBot.fetchUser >>> runSlack,
     uploadFile: AbsenceBot.uplaodFile >>> runSlack,
-    postMessage: { AbsenceBot.postMessage(with: $0, channel: $1) |> runSlack }
+    postMessage: AbsenceBot.postMessage >>> runSlack
   )
 
-  public struct UserPayload: Decodable {
+  public struct UserPayload: Codable {
     public private(set) var user: User
   }
   
@@ -44,7 +44,7 @@ public struct Slack {
     }
   }
 
-  public struct StatusPayload: Decodable {
+  public struct StatusPayload: Codable {
     public private(set) var ok: Bool
   }
   
@@ -56,7 +56,27 @@ public struct Slack {
     public private(set) var title: String
   }
 
-  public struct SlackError: Decodable {
+  public struct Message: Codable {
+    public private(set) var text: String
+    public private(set) var channel: String
+    public private(set) var attachments: [Attachment]
+    
+    public struct Attachment: Codable {
+      public private(set) var fallback: String?
+      public private(set) var text: String
+      public private(set) var callbackId: String?
+      public private(set) var actions: [InteractiveAction]?
+
+      enum CodingKeys: String, CodingKey {
+        case fallback
+        case text
+        case callbackId = "callback_id"
+        case actions
+      }
+    }
+  }
+
+  public struct SlackError: Codable {
     public private(set) var error: String
   }
 }
@@ -113,9 +133,9 @@ func uplaodFile(with file: Slack.File) -> DecodableRequest<Either<Slack.SlackErr
   )
 }
 
-func postMessage(with text: String, channel: String) -> DecodableRequest<Either<Slack.SlackError, Slack.StatusPayload>> {
+func postMessage(with message: Slack.Message) -> DecodableRequest<Either<Slack.SlackError, Slack.StatusPayload>> {
   let body = try? slackJsonEncoder
-    .encode(["text": text, "channel": channel])
+    .encode(message)
 
   return DecodableRequest(
     rawValue: URLRequest(url: URL(string: "https://slack.com/api/chat.postMessage")!)
