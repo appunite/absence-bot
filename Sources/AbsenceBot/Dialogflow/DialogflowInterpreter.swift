@@ -3,19 +3,7 @@ import Prelude
 import Optics
 
 public func interprete(payload: Dialogflow, timeZone: TimeZone) -> Status {
-  switch payload.action {
-  case .report:
-    let context = payload.outputContexts
-      .first { $0.name.identifier == .report }
-    
-    guard let period = context
-      .flatMap ({ $0.parameters |> period(with:) })
-      .flatMap ({ $0.applyTimeZoneOffsetFix(timeZone: timeZone) })
-      else { return .incomplete(Fulfillment(text: .raw("There is no dates value."))) }
-    
-    // done
-    return .report(period, Fulfillment(text: .raw("Ok, let me prepare this report for you.")))
-    
+  switch payload.action {    
   case .full, .fillDate:
     let followupContextParams = payload.outputContexts
       .first { $0.name.identifier == .followup }
@@ -26,7 +14,7 @@ public func interprete(payload: Dialogflow, timeZone: TimeZone) -> Status {
     
     // we don't have any dates, we need to ask about them
     guard let period = followupContextParams
-      .flatMap ({ $0 |> period(with:) })
+      .flatMap (period(with:))
       .flatMap ({ $0.applyTimeZoneOffsetFix(timeZone: timeZone) })
       else { return .incomplete(Fulfillment(text: .missingPeriod)) }
     
@@ -46,7 +34,7 @@ public func interprete(payload: Dialogflow, timeZone: TimeZone) -> Status {
       else { return .incomplete(Fulfillment(text: .raw("There is no reason value."))) }
     
     guard let period = followupContextParams
-      .flatMap ({ $0 |> period(with:) })
+      .flatMap (period(with:))
       .flatMap ({ $0.applyTimeZoneOffsetFix(timeZone: timeZone) })
       else { return .incomplete(Fulfillment(text: .raw("There is no date defined."))) }
     

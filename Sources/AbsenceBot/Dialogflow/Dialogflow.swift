@@ -37,7 +37,6 @@ public struct Dialogflow: Codable, Equatable {
     case full = "absenceday.absenceday-full"
     case fillDate = "absenceday.absenceday-fill-date"
     case accept = "absenceday.absenceday-yes"
-    case report = "absenceday.absence-report"
   }
   
   public enum Reason: String, Codable, Equatable {

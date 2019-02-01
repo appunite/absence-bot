@@ -73,10 +73,22 @@ public struct Slack {
         case callbackId = "callback_id"
         case actions
       }
+      
+      public struct InteractiveAction: Codable {
+        public private(set) var name: String
+        public private(set) var text: String?
+        public private(set) var type: String
+        public private(set) var value: Action
+        
+        public enum Action: String, Codable {
+          case accept
+          case reject
+        }
+      }
     }
   }
 
-  public struct SlackError: Codable {
+  public struct SlackError: Error, Codable {
     public private(set) var error: String
   }
 }
@@ -156,3 +168,24 @@ private let slackJsonDecoder = JSONDecoder()
   |> \.dateDecodingStrategy .~ .secondsSince1970
 private let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
+
+
+extension Slack.Message {
+  public static func announcementMessage(callbackId: String, requester: String, period: String, reason: String)  -> Slack.Message {
+    // generate attachement
+    let attachment = Slack.Message.Attachment(
+      fallback: "Absence acceptance interactive message",
+      text: "Let me know what you think about this.",
+      callbackId: callbackId,
+      actions: [
+        .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
+        .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
+    )
+    
+    // generate text // get2(conn.data)!.name
+    let text = "<@\(requester)> is asking for vacant \(period) because of the \(reason)."
+    
+    // generate message
+    return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])
+  }
+}

@@ -5,6 +5,7 @@ import HttpPipeline
 import Optics
 import Prelude
 import Tuple
+import Html
 
 public let siteMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit, Data> =
   requestLogger { Current.logger.info($0) }
@@ -27,15 +28,7 @@ private func render(conn: Conn<StatusLineOpen, Route>)
         >=> respond(text: "Slack!")
     case .dialogflow(let payload):
       return conn.map(const(payload))
-        |> testMiddleware
-
-//      return x |> postSlackMiddleware
-//        |> fetchSlackUserMiddleware
-//        |> postSlackMiddleware
-//        |> uploadFileSlackMiddleware
-//        |> fetchAccessTokenGoogleMiddleware
-//        >>> requireAccessToken
-//        |> addEventGoogleMiddleware
+        |> absenceRequestDialogflowMiddleware
     }
 }
 
@@ -58,18 +51,16 @@ public func responseTimeout(_ interval: TimeInterval)
           )
           .delay(interval)
           .parallel
-        
+
         return timeout.sequential
       }
     }
 }
 
-import Html
 public func respond<A>(json: Data) -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
   return respond(data: json, contentType: .json)
 }
 
-//import MediaType
 public func respond<A>(data: Data, contentType: MediaType)
   -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
     
@@ -86,105 +77,48 @@ public func respond<A: Encodable>(encoder: JSONEncoder) -> Middleware<HeadersOpe
   }
 }
 
-let testMiddleware: Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> =
-  fulfillmentMiddlleware
-    >>> requireSlackUserAndDialogflowResponse
-    <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
-
-
-public func testFetchUser(_ conn: Conn<StatusLineOpen, Dialogflow>)
-  -> IO<Conn<StatusLineOpen, Slack.User>> {
-    
-    return Current.slack.fetchUser(conn.data.user!)
-      .run
-      .map(^\.right)
-      .map { conn.map(const($0!.right!.user)) }
-}
-
-
-//func requireSlack<A>(
-//  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Database.User, A>, Data>
-//  )
-//  -> Middleware<StatusLineOpen, ResponseEnded, T2<Database.User?, A>, Data> {
+//private func postSlackMiddleware(
+//  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Slack.StatusPayload, Data>
+//  ) -> Middleware<StatusLineOpen, ResponseEnded, Slack.Message, Data> {
 //
-//    return filterMap(require1 >>> pure, or: loginAndRedirect)
-//      <<< filter(get1 >>> ^\.isAdmin, or: redirect(to: .home))
-//      <| middleware
+//  return { conn in
+//    return Current.slack.postMessage(conn.data)
+//      .run
+//      .flatMap { errorOrMessage in
+//        switch errorOrMessage {
+//        case let .right(.right(payload)):
+//          return conn.map(const(payload))
+//            |> middleware
+//
+//        case let .right(.left(e)):
+//          return conn
+//            |> writeStatus(.internalServerError)
+//            >=> respond(text: e.error)
+//
+//        case let .left(e):
+//          return conn
+//            |> writeStatus(.internalServerError)
+//            >=> respond(text: e.localizedDescription)
+//        }
+//    }
+//  }
 //}
 
-
-public func fetchUser<A>(_ conn: Conn<StatusLineOpen, T2<String, A>>)
-  -> IO<Conn<StatusLineOpen, T2<Slack.User?, A>>> {
-    
-    return Current.slack.fetchUser(get1(conn.data))
-      .run
-      .map(^\.right)
-      .map { conn.map(const($0?.right?.user .*. conn.data.second)) }
-}
-
-private func fulfillmentMiddlleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User?>, Data> {
-
-  return { conn in
-    switch interprete(payload: get1(conn.data), timeZone: TimeZone.current) {
-    case let .complete(_, _, fulfillment):
-      return conn.map(const(fulfillment))
-        |> middleware
-    case let .incomplete(fulfillment):
-      return conn.map(const(fulfillment))
-        |> middleware
-    case .report(_, _):
-      fatalError()
-    }
-  }
-}
-
-private func requireSlackUserAndDialogflowResponse(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User?>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> {
-  
-  return { conn in
-    guard let user = conn.data.user else {
-      return conn |>
-        writeStatus(.internalServerError) >=>
-        respond(text: "Missing slack user.")
-    }
-
-    return Current.slack.fetchUser(user)
-      .run
-      .flatMap { errorOrUser in
-        switch errorOrUser {
-        case let .right(.right(payload)):
-          return conn.map(const(conn.data .*. payload.user))
-            |> middleware
-          
-        case let .right(.left(e)):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.error)
-          
-        case let .left(e):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.localizedDescription)
-        }
-    }
-  }
-}
-
-//private func dialogflowInterpreterMiddleware(
-//  _ conn: Conn<StatusLineOpen, Dialogflow>
+//private func uploadFileSlackMiddleware(
+//  _ conn: Conn<StatusLineOpen, String>
 //  )
 //  -> IO<Conn<ResponseEnded, Data>> {
-//    return Current.slack.fetchUser(conn.data)
+//    let file = Slack.File(
+//      content: Data(base64Encoded: "dGV4dA==")!, channels: "U029V5Q4E", filename: "file.txt", filetype: "txt", title: "title")
+//
+//    return Current.slack.uploadFile(file)
 //      .run
-//      .flatMap { errorOrUser in
-//        switch errorOrUser {
+//      .flatMap { errorOrMessage in
+//        switch errorOrMessage {
 //        case let .right(.right(payload)):
 //          return conn
 //            |> writeStatus(.ok)
-//            >=> respond(text: "\(payload.user.name)")
+//            >=> respond(text: "\(payload.ok)")
 //
 //        case let .right(.left(e)):
 //          return conn
@@ -198,88 +132,6 @@ private func requireSlackUserAndDialogflowResponse(
 //        }
 //    }
 //}
-
-
-private func fetchSlackUserMiddleware(
-  _ conn: Conn<StatusLineOpen, String>
-  )
-  -> IO<Conn<ResponseEnded, Data>> {
-    return Current.slack.fetchUser(conn.data)
-      .run
-      .flatMap { errorOrUser in
-        switch errorOrUser {
-        case let .right(.right(payload)):
-          return conn
-            |> writeStatus(.ok)
-            >=> respond(text: "\(payload.user.name)")
-
-        case let .right(.left(e)):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.error)
-
-        case let .left(e):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.localizedDescription)
-        }
-    }
-}
-
-private func postSlackMiddleware(
-  _ conn: Conn<StatusLineOpen, String>
-  )
-  -> IO<Conn<ResponseEnded, Data>> {
-    return Current.slack.postMessage(conn.data, "aU029V5Q4E")
-      .run
-      .flatMap { errorOrMessage in
-        switch errorOrMessage {
-        case let .right(.right(payload)):
-          return conn
-            |> writeStatus(.ok)
-            >=> respond(text: "\(payload.ok)")
-
-        case let .right(.left(e)):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.error)
-
-        case let .left(e):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.localizedDescription)
-        }
-    }
-}
-
-private func uploadFileSlackMiddleware(
-  _ conn: Conn<StatusLineOpen, String>
-  )
-  -> IO<Conn<ResponseEnded, Data>> {
-    let file = Slack.File(
-      content: Data(base64Encoded: "dGV4dA==")!, channels: "U029V5Q4E", filename: "file.txt", filetype: "txt", title: "title")
-
-    return Current.slack.uploadFile(file)
-      .run
-      .flatMap { errorOrMessage in
-        switch errorOrMessage {
-        case let .right(.right(payload)):
-          return conn
-            |> writeStatus(.ok)
-            >=> respond(text: "\(payload.ok)")
-          
-        case let .right(.left(e)):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.error)
-          
-        case let .left(e):
-          return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.localizedDescription)
-        }
-    }
-}
 
 
 

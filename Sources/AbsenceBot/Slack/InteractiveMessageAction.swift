@@ -1,7 +1,7 @@
 import Foundation
 
 public struct InteractiveMessageAction {
-  public private(set) var actions: [InteractiveAction]
+  public private(set) var actions: [Slack.Message.Attachment.InteractiveAction]
   public private(set) var callbackId: UUID
   public private(set) var user: User
   public private(set) var channel: Channel
