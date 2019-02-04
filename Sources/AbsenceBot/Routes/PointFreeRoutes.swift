@@ -7,7 +7,7 @@ public protocol DerivePartialIsos {}
 public enum Route: DerivePartialIsos, Equatable {
     case hello
     case slack
-    case dialogflow(Dialogflow)
+    case dialogflow(Webhook)
 }
 
 private let routers: [Router<Route>] = [
@@ -21,7 +21,7 @@ private let routers: [Router<Route>] = [
 
     // Matches: GET /dialogflow
     .dialogflow
-      <¢> post %> lit("dialogflow") %> jsonBody(Dialogflow.self, decoder: dialogflowJsonDecoder) <% end,
+      <¢> post %> lit("dialogflow") %> jsonBody(Webhook.self, decoder: dialogflowJsonDecoder) <% end,
 ]
 
 public let router = routers.reduce(.empty, <|>)

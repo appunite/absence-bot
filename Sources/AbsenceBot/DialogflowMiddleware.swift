@@ -6,7 +6,7 @@ import Optics
 import Prelude
 import Tuple
 
-let absenceRequestDialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> =
+let absenceRequestDialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded, Webhook, Data> =
   fulfillmentMiddleware
     >>> fetchSlackUserMiddleware
     >>> basicAuth(
@@ -17,23 +17,22 @@ let absenceRequestDialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded
 
 private func fulfillmentMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User>, Data> {
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
   
   return { conn in
     let (dialogflow, user) = (get1(conn.data), rest(conn.data))
     
-    switch interprete(payload: dialogflow, timeZone: user.timezone) {
-    case let .complete(reason, period, fulfillment):
-      let period = period
+    switch interprete(payload: dialogflow, user: user) {
+    case let .complete(request, fulfillment):
+      let period = request.period
         .dates(timeZone: Current.hqTimeZone())
         .joined(separator: " - ")
       
       let message = Slack.Message
-        .announcementMessage(callbackId: "x", requester: user.id, period: period, reason: reason.rawValue)
+        .announcementMessage(callbackId: "x", requester: user.id, period: period, reason: request.reason.rawValue)
       
       return Current.slack.postMessage(message)
-        .run
-        .map(^\.right?.right) // todo: try to better handle this error
+        .run // todo: try to better handle this error
         .flatMap { _ in
           return conn.map(const(fulfillment))
             |> middleware
@@ -48,8 +47,8 @@ private func fulfillmentMiddleware(
 }
 
 private func fetchSlackUserMiddleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Dialogflow, Slack.User>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, Dialogflow, Data> {
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, Webhook, Data> {
   
   return { conn in
     guard let user = conn.data.user else {

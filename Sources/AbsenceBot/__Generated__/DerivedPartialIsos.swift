@@ -31,7 +31,7 @@ import Prelude
 
 
       extension PartialIso where A == (
-            Dialogflow
+            Webhook
         ), B == Route {
 
           public static let dialogflow = parenthesize <| PartialIso(
