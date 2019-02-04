@@ -2,25 +2,25 @@ import Foundation
 import Prelude
 
 public struct Fulfillment: Encodable {
-    let text: String?
-    let contexts: [Context]?
-    
-    enum CodingKeys: String, CodingKey {
-        case text = "fulfillmentText"
-        case contexts = "outputContexts"
-    }
-    
-    public init(text: Body?, contexts: [Context]? = nil) {
-        self.text = text?.description
-        self.contexts = contexts
-    }
-    
-    public enum Body {
-        case raw(String)
-        case missingPeriod
-        case thanks
-        case confirmation(String, Absence.Period, TimeZone)
-    }
+  public private(set) var text: String?
+  public private(set) var contexts: [Context]?
+  
+  enum CodingKeys: String, CodingKey {
+    case text = "fulfillmentText"
+    case contexts = "outputContexts"
+  }
+  
+  public init(text: Body?, contexts: [Context]? = nil) {
+    self.text = text?.description
+    self.contexts = contexts
+  }
+  
+  public enum Body {
+    case raw(String)
+    case missingPeriod
+    case thanks
+    case confirmation(String, Absence.Period, TimeZone)
+  }
 }
 
 extension Fulfillment.Body: CustomStringConvertible {

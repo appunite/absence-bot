@@ -4,14 +4,11 @@ import Prelude
 import Optics
 import Tuple
 
-private enum Action: String, Codable, Equatable {
-  case full = "absenceday.absenceday-full"
-  case fillDate = "absenceday.absenceday-fill-date"
-  case accept = "absenceday.absenceday-yes"
-}
-
 public func interprete(payload: Webhook, user: Slack.User) -> Status {
-  switch Action.init(rawValue: payload.action)! {
+  guard let action = Webhook.Action(rawValue: payload.action)
+    else { fatalError("Undefined action type!") }
+
+  switch action {
   case .full, .fillDate:
     let followupContextParams = payload.followupContext
       .map { $0.parameters }
@@ -111,56 +108,48 @@ private func applyTimeZoneOffset(_ timeZone: TimeZone) -> (Absence.Period) -> Ab
 }
 
 extension Webhook {
-  internal var followupContext: Context? {
-    return self.outputContexts
-      .first { ContextName(rawValue: $0.name)?.identifier == .followup }
-  }
-
-  internal var fullContext: Context? {
-    return self.outputContexts
-      .first { ContextName(rawValue: $0.name)?.identifier == .full }
-  }
-
-  internal func fullContext(lifespanCount: Int, params: Context.Parameters) -> Context {
-    return .init(
-      name: ContextName(session: self.session, identifier: .full)!.rawValue,
-      lifespanCount: lifespanCount,
-      parameters: params
-    )
-  }
-
-  internal func followupContext(lifespanCount: Int, params: Context.Parameters) -> Context {
-    return .init(
-      name: ContextName(session: self.session, identifier: .followup)!.rawValue,
-      lifespanCount: lifespanCount,
-      parameters: params
-    )
+  internal enum Action: String {
+    case full = "absenceday.absenceday-full"
+    case fillDate = "absenceday.absenceday-fill-date"
+    case accept = "absenceday.absenceday-yes"
   }
 }
 
-public struct ContextName: RawRepresentable, Equatable {
-  public enum Identifier: String {
+extension Webhook {
+  private enum ContextIdentifier: String {
     case followup = "absenceday-followup"
     case full = "absenceday-full"
     case report = "absence-report-followup"
   }
-  
-  public private(set) var rawValue: String
-  public init?(rawValue: String) {
-    self.rawValue = rawValue
+
+  internal var followupContext: Context? {
+    return self.outputContexts
+      .first { $0.name.lastPathComponent == ContextIdentifier.followup.rawValue }
   }
-  
-  public var identifier: Identifier? {
-    return URL(string: rawValue)
-      .flatMap { Identifier(rawValue: $0.lastPathComponent) }
+
+  internal var fullContext: Context? {
+    return self.outputContexts
+      .first { $0.name.lastPathComponent == ContextIdentifier.full.rawValue }
   }
-  
-  public init?(session: String, identifier: Identifier) {
-    guard let rawValue = URL(string: session)?
+
+  internal func fullContext(lifespanCount: Int, params: Context.Parameters) -> Context {
+    return context(with: .full, lifespanCount: lifespanCount, params: params)
+  }
+
+  internal func followupContext(lifespanCount: Int, params: Context.Parameters) -> Context {
+    return context(with: .followup, lifespanCount: lifespanCount, params: params)
+  }
+
+  private func context(with identifier: ContextIdentifier, lifespanCount: Int, params: Context.Parameters) -> Context {
+    let name = URL(string: self.session)!
       .appendingPathComponent("contexts")
       .appendingPathComponent(identifier.rawValue)
-      .absoluteString else { return nil }
-    
-    self.rawValue = rawValue
+
+    return .init(
+      name: name,
+      lifespanCount: lifespanCount,
+      parameters: params
+    )
   }
 }
+

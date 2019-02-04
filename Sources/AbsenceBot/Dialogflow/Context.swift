@@ -1,7 +1,7 @@
 import Foundation
 
 public struct Context: Codable, Equatable {
-  public private(set) var name: String
+  public private(set) var name: URL
   public private(set) var lifespanCount: Int
   public private(set) var parameters: Parameters
   
