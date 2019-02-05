@@ -1,11 +1,17 @@
 import Foundation
 
 public struct Webhook: Codable, Equatable {
-  public private(set) var session: String
+  public private(set) var session: URL
   public private(set) var user: String?
-  public private(set) var action: String
+  public private(set) var action: Action
   public private(set) var outputContexts: [Context]
   
+  public enum Action: String, Codable {
+    case full = "absenceday.absenceday-full"
+    case fillDate = "absenceday.absenceday-fill-date"
+    case accept = "absenceday.absenceday-yes"
+  }
+
   private enum OriginalDetectIntentRequestCodingKeys: String, CodingKey {
     case payload
   }
@@ -37,12 +43,11 @@ public struct Webhook: Codable, Equatable {
     let container = try decoder.container(keyedBy: CustomCodingKeys.self)
 
     // session indetifier
-    let _session = try container.decode(String.self, forKey: .session)
-    self.session = _session
+    self.session = try container.decode(URL.self, forKey: .session)
 
     // contextes
     let queryResult = try container.nestedContainer(keyedBy: QueryResultCodingKeys.self, forKey: .queryResult)
-    self.action = try queryResult.decode(String.self, forKey: .action)
+    self.action = try queryResult.decode(Action.self, forKey: .action)
     self.outputContexts = try queryResult
       .decodeIfPresent([Throwable<Context>].self, forKey: .outputContexts)?
       .compactMap ({ $0.value }) ?? []

@@ -5,10 +5,7 @@ import Optics
 import Tuple
 
 public func interprete(payload: Webhook, user: Slack.User) -> Status {
-  guard let action = Webhook.Action(rawValue: payload.action)
-    else { fatalError("Undefined action type!") }
-
-  switch action {
+  switch payload.action {
   case .full, .fillDate:
     let followupContextParams = payload.followupContext
       .map { $0.parameters }
@@ -108,48 +105,31 @@ private func applyTimeZoneOffset(_ timeZone: TimeZone) -> (Absence.Period) -> Ab
 }
 
 extension Webhook {
-  internal enum Action: String {
-    case full = "absenceday.absenceday-full"
-    case fillDate = "absenceday.absenceday-fill-date"
-    case accept = "absenceday.absenceday-yes"
-  }
-}
-
-extension Webhook {
-  private enum ContextIdentifier: String {
-    case followup = "absenceday-followup"
-    case full = "absenceday-full"
-    case report = "absence-report-followup"
-  }
-
   internal var followupContext: Context? {
     return self.outputContexts
-      .first { $0.name.lastPathComponent == ContextIdentifier.followup.rawValue }
+      .first { $0.identifier == .followup }
   }
 
   internal var fullContext: Context? {
     return self.outputContexts
-      .first { $0.name.lastPathComponent == ContextIdentifier.full.rawValue }
+      .first { $0.identifier == .full }
   }
 
   internal func fullContext(lifespanCount: Int, params: Context.Parameters) -> Context {
-    return context(with: .full, lifespanCount: lifespanCount, params: params)
+    let name = Context.name(session: self.session, identifier: .full)
+    return .init(name: name, lifespanCount: lifespanCount, parameters: params)
   }
 
   internal func followupContext(lifespanCount: Int, params: Context.Parameters) -> Context {
-    return context(with: .followup, lifespanCount: lifespanCount, params: params)
-  }
-
-  private func context(with identifier: ContextIdentifier, lifespanCount: Int, params: Context.Parameters) -> Context {
-    let name = URL(string: self.session)!
-      .appendingPathComponent("contexts")
-      .appendingPathComponent(identifier.rawValue)
-
-    return .init(
-      name: name,
-      lifespanCount: lifespanCount,
-      parameters: params
-    )
+    let name = Context.name(session: self.session, identifier: .followup)
+    return .init(name: name, lifespanCount: lifespanCount, parameters: params)
   }
 }
 
+extension Context {
+  internal static func name(session: URL, identifier: Context.Identifier) -> URL {
+    return session
+      .appendingPathComponent("contexts")
+      .appendingPathComponent(identifier.rawValue)
+  }
+}

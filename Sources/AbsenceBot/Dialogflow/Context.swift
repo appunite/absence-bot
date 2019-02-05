@@ -5,6 +5,16 @@ public struct Context: Codable, Equatable {
   public private(set) var lifespanCount: Int
   public private(set) var parameters: Parameters
   
+  internal enum Identifier: String {
+    case followup = "absenceday-followup"
+    case full = "absenceday-full"
+    case report = "absence-report-followup"
+  }
+
+  internal var identifier: Identifier? {
+    return Identifier(rawValue: name.lastPathComponent)
+  }
+
   public struct Parameters: Codable, Equatable {
     // @reason
     public private(set) var reason: String?
