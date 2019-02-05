@@ -73,6 +73,7 @@ extension EnvVars {
     self.appEnv = try values.decode(AppEnv.self, forKey: .appEnv)
     self.baseUrl = try values.decode(URL.self, forKey: .baseUrl)
     self.port = Int(try values.decode(String.self, forKey: .port))!
+    self.basicAuth = try .init(from: decoder)
     self.google = try .init(from: decoder)
     self.slack = try .init(from: decoder)
     self.postgres = try .init(from: decoder)
@@ -84,6 +85,7 @@ extension EnvVars {
     try container.encode(self.appEnv, forKey: .appEnv)
     try container.encode(self.baseUrl, forKey: .baseUrl)
     try container.encode(String(self.port), forKey: .port)
+    try self.basicAuth.encode(to: encoder)
     try self.google.encode(to: encoder)
     try self.slack.encode(to: encoder)
     try self.postgres.encode(to: encoder)
