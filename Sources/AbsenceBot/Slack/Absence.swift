@@ -22,12 +22,12 @@ public struct Absence: Codable {
 }
 
 extension Absence.Period {
-  public init(dates: (Date, Date)) {
+  public init(dates: (Date, Date), tz: TimeZone?) {
     let sortedDates = [dates.0, dates.1]
       .sorted(by: <)
-    
-    self.startedAt = sortedDates.first!
-    self.finishedAt = sortedDates.last!
+
+    self.startedAt = tz.flatMap { sortedDates.first!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.first!
+    self.finishedAt = tz.flatMap { sortedDates.last!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.last!
   }
 
   public var isAllDay: Bool {

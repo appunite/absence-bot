@@ -1,4 +1,5 @@
 import Foundation
+import Prelude
 
 public struct Context: Codable, Equatable {
   public private(set) var name: URL
@@ -76,19 +77,19 @@ extension Context.Parameters {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     
     let _reason = try? container.decodeIfPresent(String.self, forKey: .reason)
-    self.reason = _reason.flatMap { $0 }
+    self.reason = _reason.flatMap(id)
     
     let _datePeriod = try? container.decode(Period.self, forKey: .datePeriod)
-    self.datePeriod = _datePeriod.flatMap({ $0 })
+    self.datePeriod = _datePeriod.flatMap(id)
     
     let _dates = try? container.decodeIfPresent([Date].self, forKey: .dates)
-    self.dates = _dates.flatMap { $0 }
+    self.dates = _dates.flatMap(id)
     
     let _timeStart = try? container.decode(Date?.self, forKey: .timeStart)
-    self.timeStart = _timeStart.flatMap({ $0 })
+    self.timeStart = _timeStart.flatMap(id)
     
     let _timeEnd = try? container.decode(Date?.self, forKey: .timeEnd)
-    self.timeEnd = _timeEnd.flatMap { $0 }
+    self.timeEnd = _timeEnd.flatMap(id)
     
     /*
      "parameters": {
@@ -96,7 +97,7 @@ extension Context.Parameters {
      }*/
     
     let _date = try? container.decodeIfPresent(Date.self, forKey: .date)
-    self.date = _date.flatMap { $0 }
+    self.date = _date.flatMap(id)
     
     /*
      "parameters": {
@@ -105,10 +106,10 @@ extension Context.Parameters {
      }*/
     
     let _dateStart = try? container.decode(Date?.self, forKey: .dateStart)
-    self.dateStart = _dateStart.flatMap({ $0 })
+    self.dateStart = _dateStart.flatMap(id)
     
     let _dateEnd = try? container.decode(Date?.self, forKey: .dateEnd)
-    self.dateEnd = _dateEnd.flatMap { $0 }
+    self.dateEnd = _dateEnd.flatMap(id)
     
     /*
      "parameters": {
@@ -117,10 +118,10 @@ extension Context.Parameters {
      }*/
     
     let _dateTimeStart = try? container.decode(Date?.self, forKey: .dateTimeStart)
-    self.dateTimeStart = _dateTimeStart.flatMap({ $0 })
+    self.dateTimeStart = _dateTimeStart.flatMap(id)
     
     let _dateTimeEnd = try? container.decode(Date?.self, forKey: .dateTimeEnd)
-    self.dateTimeEnd = _dateTimeEnd.flatMap { $0 }
+    self.dateTimeEnd = _dateTimeEnd.flatMap(id)
     
     /*
      "parameters": {
@@ -134,7 +135,7 @@ extension Context.Parameters {
       if let nestedContainer = nestedContainer {
         let _dateTimeStart = try? nestedContainer
           .decode(Date?.self, forKey: CustomeCodingKeys(stringValue: "date_time")!)
-        self.dateTimeStart = _dateTimeStart.flatMap({ $0 })
+        self.dateTimeStart = _dateTimeStart.flatMap(id)
       }
     }
     
@@ -144,7 +145,7 @@ extension Context.Parameters {
       if let nestedContainer = nestedContainer {
         let _dateTimeEnd = try? nestedContainer
           .decode(Date?.self, forKey: CustomeCodingKeys(stringValue: "date_time")!)
-        self.dateTimeEnd = _dateTimeEnd.flatMap({ $0 })
+        self.dateTimeEnd = _dateTimeEnd.flatMap(id)
       }
     }
   }

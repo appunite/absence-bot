@@ -8,40 +8,30 @@ import Tuple
 
 let absenceRequestDialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded, Webhook, Data> =
   fulfillmentMiddleware
+    >>> interpreterMiddleware
     >>> fetchSlackUserMiddleware
     >>> basicAuth(
       user: Current.envVars.basicAuth.username,
       password: Current.envVars.basicAuth.password)
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
-
 private func fulfillmentMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Fulfillment, Absence?>, Data> {
   
   return { conn in
-    let (dialogflow, user) = (get1(conn.data), rest(conn.data))
-    
-    switch interprete(payload: dialogflow, user: user) {
-    case let .complete(request, fulfillment):
-      let period = request.period
-        .dates(timeZone: Current.hqTimeZone())
-        .joined(separator: " - ")
-      
-      let message = Slack.Message
-        .announcementMessage(callbackId: "x", requester: user.id, period: period, reason: request.reason.rawValue)
-      
-      return Current.slack.postMessage(message)
-        .run // todo: try to better handle this error
-        .flatMap { _ in
-          return conn.map(const(fulfillment))
-            |> middleware
-      }
-    case let .incomplete(fulfillment):
+    let (fulfillment, _absence) = (get1(conn.data), rest(conn.data))
+
+    guard let absence = _absence else {
       return conn.map(const(fulfillment))
         |> middleware
-    case .report(_, _):
-      fatalError()
+    }
+
+    return Current.slack.postMessage(.announcementMessage(absence: absence))
+      .run // todo: try to better handle this error
+      .flatMap { _ in
+        return conn.map(const(fulfillment))
+          |> middleware
     }
   }
 }
@@ -53,8 +43,7 @@ private func fetchSlackUserMiddleware(
   return { conn in
     guard let user = conn.data.user else {
       return conn
-        |> writeStatus(.internalServerError)
-        >=> respond(text: "Missing slack user.")
+        |> internalServerError(respond(text: "Missing slack user."))
     }
     
     return Current.slack.fetchUser(user)
@@ -67,13 +56,11 @@ private func fetchSlackUserMiddleware(
           
         case let .right(.left(e)):
           return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.error)
+            |> internalServerError(respond(text: e.error))
           
         case let .left(e):
           return conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: e.localizedDescription)
+            |> internalServerError(respond(text: e.localizedDescription))
         }
     }
   }

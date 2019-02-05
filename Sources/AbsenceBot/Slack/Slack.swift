@@ -171,19 +171,25 @@ private let slackJsonEncoder = JSONEncoder()
 
 
 extension Slack.Message {
-  public static func announcementMessage(callbackId: String, requester: String, period: String, reason: String)  -> Slack.Message {
+  public static func announcementMessage(absence: Absence)  -> Slack.Message {
     // generate attachement
     let attachment = Slack.Message.Attachment(
       fallback: "Absence acceptance interactive message",
       text: "Let me know what you think about this.",
-      callbackId: callbackId,
+      callbackId: "id", //todo
       actions: [
         .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
         .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
     )
-    
+
+    // get absence date range string
+    let period = absence.period
+      .dates(timeZone: Current.hqTimeZone())
+      .map({ "*\($0)*" })
+      .joined(separator: " - ")
+
     // generate text // get2(conn.data)!.name
-    let text = "<@\(requester)> is asking for vacant \(period) because of the \(reason)."
+    let text = "<@\(absence.user.id)> is asking for vacant \(period) because of the \(absence.reason.rawValue)."
     
     // generate message
     return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])

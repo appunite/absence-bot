@@ -4,104 +4,108 @@ import Prelude
 import Optics
 import Tuple
 
-public func interprete(payload: Webhook, user: Slack.User) -> Status {
-  switch payload.action {
-  case .full, .fillDate:
-    let followupContextParams = payload.followupContext
-      .map { $0.parameters }
-    
-    guard let reason = followupContextParams?.reason
-      else { return .incomplete(Fulfillment(text: .raw("There is no reason value."))) }
-    
-    // we don't have any dates, we need to ask about them
-    guard let period = followupContextParams?.period
-      .flatMap (applyTimeZoneOffset(user.timezone))
-      else { return .incomplete(Fulfillment(text: .missingPeriod)) }
-
-    // we have all date, let's ask user if everytking is ok
-    let fullContext = followupContextParams
-      .flatMap { payload.fullContext(lifespanCount: 2, params: $0) }
-
-    return .incomplete(Fulfillment(text: .confirmation(reason, period, user.timezone), contexts: [fullContext].compactMap {$0} ))
-
-  case .accept:
-    let followupContextParams = payload.followupContext
-      .map { $0.parameters }
-    
-    guard let reason = followupContextParams?.reason
-      else { return .incomplete(Fulfillment(text: .raw("There is no reason value."))) }
-    
-    guard let period = followupContextParams?.period
-      .flatMap (applyTimeZoneOffset(user.timezone))
-      else { return .incomplete(Fulfillment(text: .raw("There is no date defined."))) }
-    
-    // create full context with clear-out lifespan count
-    let _fullContext = payload.fullContext(lifespanCount: 0, params: .init())
-    
-    // create followup context with clear-out lifespan count
-    let _followupContext = payload.followupContext(lifespanCount: 0, params: .init())
-    
-    // we're done, send tanks comment and clear out contextes
-    let absenceRequest = Absence(user: user, period: period, reason: Absence.Reason.init(rawValue: reason)!)
-    return .complete(absenceRequest, Fulfillment(text: .thanks, contexts: [
-      _fullContext, _followupContext].compactMap { $0 }))
-  }
+public func internalServerError<A>(_ middleware: @escaping Middleware<HeadersOpen, ResponseEnded, A, Data>)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return writeStatus(.internalServerError)
+      >=> middleware
 }
 
-extension Context.Parameters {
-  internal var period: Absence.Period? {
-    // single day absence
-    if let date = self.date {
-      // if there is no information about time, just treat this as full day
-      guard let timeStart = self.timeStart, let timeEnd = self.timeEnd
-        else { return Absence.Period(dates: (date, date)) }
+public func interpreterMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Fulfillment, Absence?>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
+  return { conn in
+    let (payload, user) = (get1(conn.data), rest(conn.data))
+    
+    switch payload.action {
+    case .full, .fillDate:
+      guard let followupContext = payload.followupContext
+        else { fatalError() }
       
-      // extend day with time information
-      return zip(with: { Absence.Period(dates: ($0, $1)) })(
-        date.dateByReplacingTime(from: timeStart),
-        date.dateByReplacingTime(from: timeEnd)
-      )
+      guard let reason = followupContext.parameters.reason else {
+        return conn |> internalServerError(respond(text: "There is no reason value."))
+      }
+      
+      // we don't have any dates, we need to ask about them
+      guard let period = period(parameters: followupContext.parameters, tz: user.timezone) else {
+        return middleware <| conn.map(const(Fulfillment(text: .missingPeriod) .*. nil))
+      }
+      
+      let fulfillment = Fulfillment(
+        text: .confirmation(reason, period, user.timezone),
+        contexts: [payload.fullContext(lifespanCount: 2, params: followupContext.parameters)])
+      
+      // we have all date, let's ask user if everytking is ok
+      return middleware <| conn.map(const(fulfillment .*. nil))
+      
+    case .accept:
+      guard let followupContext = payload.followupContext
+        else { fatalError() }
+      
+      guard let reason = followupContext.parameters.reason else {
+        return conn |> internalServerError(respond(text: "There is no reason value."))
+      }
+      
+      guard let period = period(parameters:followupContext.parameters, tz: user.timezone) else {
+        return conn |> internalServerError(respond(text: "There is no date defined."))
+      }
+      
+      // we're done, send tanks comment and clear out contextes
+      let absenceRequest = Absence(user: user, period: period, reason: Absence.Reason(rawValue: reason)!)
+      
+      let fulfillment = Fulfillment(
+        text: .thanks,
+        contexts: [
+          payload.fullContext(lifespanCount: 0, params: .init()),
+          payload.followupContext(lifespanCount: 0, params: .init())])
+      
+      return middleware <| conn.map(const(fulfillment .*. absenceRequest))
     }
-    
-    // date time period
-    if let start = self.dateTimeStart, let end = self.dateTimeEnd {
-      return .init(dates: (start, end))
-    }
-    
-    // period absence
-    if let period = self.datePeriod {
-      return .init(dates: (period.startDate, period.endDate))
-    }
-    
-    // date period
-    if let start = self.dateStart, let end = self.dateEnd {
-      return .init(dates: (start, end))
-    }
-    
-    // mixed date & date time period
-    if let start = self.dateTimeStart, let end = self.dateEnd {
-      // todo: I need to change end-time to 17:00
-      return .init(dates: (start, end))
-    }
-    
-    // mixed date & date time period
-    if let start = self.dateStart, let end = self.dateTimeEnd {
-      // todo: I need to change start-time to 8:00
-      return .init(dates: (start, end))
-    }
-    
-    // some error occured
-    return nil
   }
 }
 
-private func applyTimeZoneOffset(_ timeZone: TimeZone) -> (Absence.Period) -> Absence.Period? {
-  return { period in
-    return zip(with: { Absence.Period(startedAt: $0, finishedAt: $1) })(
-      period.startedAt.dateByReplacingTimeZone(timeZone: timeZone),
-      period.finishedAt.dateByReplacingTimeZone(timeZone: timeZone)
+private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Period? {
+  // single day absence
+  if let date = parameters.date {
+    // if there is no information about time, just treat this as full day
+    guard let timeStart = parameters.timeStart, let timeEnd = parameters.timeEnd
+      else { return Absence.Period(dates: (date, date), tz: tz) }
+    
+    // extend day with time information
+    return zip(with: { Absence.Period(dates: ($0, $1), tz: tz) })(
+      date.dateByReplacingTime(from: timeStart),
+      date.dateByReplacingTime(from: timeEnd)
     )
   }
+  
+  // date time period
+  if let start = parameters.dateTimeStart, let end = parameters.dateTimeEnd {
+    return .init(dates: (start, end), tz: tz)
+  }
+  
+  // period absence
+  if let period = parameters.datePeriod {
+    return .init(dates: (period.startDate, period.endDate), tz: tz)
+  }
+  
+  // date period
+  if let start = parameters.dateStart, let end = parameters.dateEnd {
+    return .init(dates: (start, end), tz: tz)
+  }
+  
+  // mixed date & date time period
+  if let start = parameters.dateTimeStart, let end = parameters.dateEnd {
+    // todo: I need to change end-time to 17:00
+    return .init(dates: (start, end), tz: tz)
+  }
+  
+  // mixed date & date time period
+  if let start = parameters.dateStart, let end = parameters.dateTimeEnd {
+    // todo: I need to change start-time to 8:00
+    return .init(dates: (start, end), tz: tz)
+  }
+  
+  // some error occured
+  return nil
 }
 
 extension Webhook {
@@ -109,17 +113,17 @@ extension Webhook {
     return self.outputContexts
       .first { $0.identifier == .followup }
   }
-
+  
   internal var fullContext: Context? {
     return self.outputContexts
       .first { $0.identifier == .full }
   }
-
+  
   internal func fullContext(lifespanCount: Int, params: Context.Parameters) -> Context {
     let name = Context.name(session: self.session, identifier: .full)
     return .init(name: name, lifespanCount: lifespanCount, parameters: params)
   }
-
+  
   internal func followupContext(lifespanCount: Int, params: Context.Parameters) -> Context {
     let name = Context.name(session: self.session, identifier: .followup)
     return .init(name: name, lifespanCount: lifespanCount, parameters: params)
@@ -133,3 +137,4 @@ extension Context {
       .appendingPathComponent(identifier.rawValue)
   }
 }
+

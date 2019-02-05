@@ -46,8 +46,7 @@ public func responseTimeout(_ interval: TimeInterval)
       return { conn in
         let timeout = middleware(conn).parallel <|> (
           conn
-            |> writeStatus(.internalServerError)
-            >=> respond(text: "Response Time-out")
+            |> internalServerError(respond(text: "Response Time-out"))
           )
           .delay(interval)
           .parallel
