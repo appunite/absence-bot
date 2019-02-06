@@ -14,6 +14,18 @@ public let siteMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Uni
     <<< route(router: router)
     <| render(conn:)
 
+public func internalServerError<A>(_ middleware: @escaping Middleware<HeadersOpen, ResponseEnded, A, Data>)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return writeStatus(.internalServerError)
+      >=> middleware
+}
+
+public func unprocessableEntityError<A>(_ middleware: @escaping Middleware<HeadersOpen, ResponseEnded, A, Data>)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return writeStatus(.unprocessableEntity)
+      >=> middleware
+}
+
 private func render(conn: Conn<StatusLineOpen, Route>)
   -> IO<Conn<ResponseEnded, Data>> {
 
@@ -28,7 +40,7 @@ private func render(conn: Conn<StatusLineOpen, Route>)
         >=> respond(text: "Slack!")
     case .dialogflow(let payload):
       return conn.map(const(payload))
-        |> absenceRequestDialogflowMiddleware
+        |> dialogflowMiddleware
     }
 }
 
