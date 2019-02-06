@@ -16,6 +16,54 @@ public func unprocessableEntityError<A>(_ middleware: @escaping Middleware<Heade
       >=> middleware
 }
 
+//public func interpreterMiddleware(
+//  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Fulfillment, Absence?>, Data>
+//  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
+//  return { conn in
+//    let (payload, user) = (get1(conn.data), rest(conn.data))
+//
+//    switch payload.action {
+//    case .full, .fillDate:
+//      guard let followupContext = payload.followupContext
+//        else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
+//
+//      guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
+//        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
+//
+//      // we don't have any dates, we need to ask about them
+//      guard let period = period(parameters: followupContext.parameters, tz: user.timezone)
+//        else { return middleware <| conn.map(const(Fulfillment.missingPeriod .*. nil)) }
+//
+//      let fulfillment = Fulfillment
+//        .confirmation(
+//          absence: .init(user: user, period: period, reason: reason),
+//          context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
+//
+//      // we have all date, let's ask user if everytking is ok
+//      return middleware <| conn.map(const(fulfillment .*. nil))
+//
+//    case .accept:
+//      guard let followupContext = payload.followupContext
+//        else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
+//
+//      guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
+//        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
+//
+//      guard let period = period(parameters:followupContext.parameters, tz: user.timezone)
+//        else { return conn |> unprocessableEntityError(respond(text: "There is no period defined.")) }
+//
+//      // we're done, send thanks comment and clear out contextes
+//      let absenceRequest = Absence(user: user, period: period, reason: reason)
+//      let fulfillment = Fulfillment.compliments(contexts: [
+//        payload.fullContext(lifespanCount: 0, params: .init()),
+//        payload.followupContext(lifespanCount: 0, params: .init())]
+//      )
+//
+//      return middleware <| conn.map(const(fulfillment .*. absenceRequest))
+//    }
+//  }
+//}
+
 public func interpreterMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Fulfillment, Absence?>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
@@ -23,47 +71,38 @@ public func interpreterMiddleware(
     let (payload, user) = (get1(conn.data), rest(conn.data))
     
     switch payload.action {
-    case .full, .fillDate:
+    case .full, .fillDate, .accept:
       guard let followupContext = payload.followupContext
         else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
-
+      
       guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
-        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
+        else { return middleware <| conn.map(const(Fulfillment.missingReason .*. nil)) }
 
-      // we don't have any dates, we need to ask about them
       guard let period = period(parameters: followupContext.parameters, tz: user.timezone)
         else { return middleware <| conn.map(const(Fulfillment.missingPeriod .*. nil)) }
+      
+      if case .accept = payload.action {
+        // we're done, send thanks comment and clear out contextes
+        let fulfillment = Fulfillment.compliments(contexts: [
+          payload.fullContext(lifespanCount: 0, params: .init()),
+          payload.followupContext(lifespanCount: 0, params: .init())]
+        )
+        
+        return middleware
+          <| conn.map(const(fulfillment .*. .init(user: user, period: period, reason: reason)))
+      }
 
+      // we have all date, let's ask user if everytking is ok
       let fulfillment = Fulfillment
         .confirmation(
           absence: .init(user: user, period: period, reason: reason),
           context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
 
-      // we have all date, let's ask user if everytking is ok
-      return middleware <| conn.map(const(fulfillment .*. nil))
-      
-    case .accept:
-      guard let followupContext = payload.followupContext
-        else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
-
-      guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
-        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
-      
-      guard let period = period(parameters:followupContext.parameters, tz: user.timezone)
-        else { return conn |> unprocessableEntityError(respond(text: "There is no period defined.")) }
-      
-      // we're done, send thanks comment and clear out contextes
-      let absenceRequest = Absence(user: user, period: period, reason: reason)
-      let fulfillment = Fulfillment.compliments(contexts: [
-        payload.fullContext(lifespanCount: 0, params: .init()),
-        payload.followupContext(lifespanCount: 0, params: .init())]
-      )
-
-      return middleware <| conn.map(const(fulfillment .*. absenceRequest))
+      return middleware
+        <| conn.map(const(fulfillment .*. nil))
     }
   }
 }
-
 private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Period? {
   // single day absence
   if let date = parameters.date {

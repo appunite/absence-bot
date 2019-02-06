@@ -12,7 +12,8 @@ public struct Fulfillment: Encodable {
 }
 
 extension Fulfillment {
-  public static let missingPeriod = Fulfillment(text: "When are you planning to take time off?", contexts: nil)
+  public static let missingPeriod = Fulfillment(text: "*When* are you planning to take time off?", contexts: nil)
+  public static let missingReason = Fulfillment(text: "What is the *reason* you're taking days off?", contexts: nil)
 
   public static func compliments(contexts: [Context]) -> Fulfillment {
     return Fulfillment(text: "Thank you! I'll inform your project manager about your request!", contexts: contexts)
@@ -20,13 +21,13 @@ extension Fulfillment {
 
   public static func confirmation(absence: Absence, context: Context) -> Fulfillment {
     let periodString = absence.period
-      .dates(tz: absence.user.timezone)
+      .dateRange(tz: absence.user.timezone)
 
     let fulfillment = { Fulfillment(text: $0, contexts: [context]) }
 
     switch absence.reason {
     case .illness:
-      return "So, you feel *sick* and you are going to take a day(s) off \(periodString), correct?" |> fulfillment
+      return "So, you feel *sick* and you are going to take day(s) off \(periodString), correct?" |> fulfillment
     case .holiday:
       return "So you're planning a *vacation* \(periodString), correct?" |> fulfillment
     case .remote:
