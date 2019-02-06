@@ -57,16 +57,22 @@ extension Absence.Period {
       |> \.timeStyle .~ .short
   }
   
-  func dates(timeZone: TimeZone) -> [String] {
+  func dates(tz: TimeZone) -> [String] {
     let sortedDates = Array(Set([self.startedAt, self.finishedAt]))
       .sorted(by: <)
     
     if self.isAllDay {
       return sortedDates
-        .compactMap { Absence.Period.daysRangeFormatter(timeZone).string(from: $0) }
+        .compactMap { Absence.Period.daysRangeFormatter(tz).string(from: $0) }
     } else {
       return sortedDates
-        .compactMap { Absence.Period.dateTimeRangeFormatter(timeZone).string(from: $0) }
+        .compactMap { Absence.Period.dateTimeRangeFormatter(tz).string(from: $0) }
     }
+  }
+
+  func dateRange(tz: TimeZone) -> String {
+    return dates(tz: tz)
+      .map({"*\($0)*"})
+      .joined(separator: " - ")
   }
 }

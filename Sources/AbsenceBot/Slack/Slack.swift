@@ -183,10 +183,7 @@ extension Slack.Message {
     )
 
     // get absence date range string
-    let period = absence.period
-      .dates(timeZone: Current.hqTimeZone())
-      .map({ "*\($0)*" })
-      .joined(separator: " - ")
+    let period = absence.period.dateRange(tz: Current.hqTimeZone())
 
     // generate text // get2(conn.data)!.name
     let text = "<@\(absence.user.id)> is asking for vacant \(period) because of the \(absence.reason.rawValue)."

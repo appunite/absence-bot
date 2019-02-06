@@ -10,6 +10,12 @@ public func internalServerError<A>(_ middleware: @escaping Middleware<HeadersOpe
       >=> middleware
 }
 
+public func unprocessableEntityError<A>(_ middleware: @escaping Middleware<HeadersOpen, ResponseEnded, A, Data>)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return writeStatus(.unprocessableEntity)
+      >=> middleware
+}
+
 public func interpreterMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<Fulfillment, Absence?>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, T2<Webhook, Slack.User>, Data> {
@@ -19,45 +25,40 @@ public func interpreterMiddleware(
     switch payload.action {
     case .full, .fillDate:
       guard let followupContext = payload.followupContext
-        else { fatalError() }
-      
-      guard let reason = followupContext.parameters.reason else {
-        return conn |> internalServerError(respond(text: "There is no reason value."))
-      }
-      
+        else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
+
+      guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
+        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
+
       // we don't have any dates, we need to ask about them
-      guard let period = period(parameters: followupContext.parameters, tz: user.timezone) else {
-        return middleware <| conn.map(const(Fulfillment(text: .missingPeriod) .*. nil))
-      }
-      
-      let fulfillment = Fulfillment(
-        text: .confirmation(reason, period, user.timezone),
-        contexts: [payload.fullContext(lifespanCount: 2, params: followupContext.parameters)])
-      
+      guard let period = period(parameters: followupContext.parameters, tz: user.timezone)
+        else { return middleware <| conn.map(const(Fulfillment.missingPeriod .*. nil)) }
+
+      let fulfillment = Fulfillment
+        .confirmation(
+          absence: .init(user: user, period: period, reason: reason),
+          context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
+
       // we have all date, let's ask user if everytking is ok
       return middleware <| conn.map(const(fulfillment .*. nil))
       
     case .accept:
       guard let followupContext = payload.followupContext
-        else { fatalError() }
+        else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
+
+      guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
+        else { return conn |> unprocessableEntityError(respond(text: "There is no reason value.")) }
       
-      guard let reason = followupContext.parameters.reason else {
-        return conn |> internalServerError(respond(text: "There is no reason value."))
-      }
+      guard let period = period(parameters:followupContext.parameters, tz: user.timezone)
+        else { return conn |> unprocessableEntityError(respond(text: "There is no period defined.")) }
       
-      guard let period = period(parameters:followupContext.parameters, tz: user.timezone) else {
-        return conn |> internalServerError(respond(text: "There is no date defined."))
-      }
-      
-      // we're done, send tanks comment and clear out contextes
-      let absenceRequest = Absence(user: user, period: period, reason: Absence.Reason(rawValue: reason)!)
-      
-      let fulfillment = Fulfillment(
-        text: .thanks,
-        contexts: [
-          payload.fullContext(lifespanCount: 0, params: .init()),
-          payload.followupContext(lifespanCount: 0, params: .init())])
-      
+      // we're done, send thanks comment and clear out contextes
+      let absenceRequest = Absence(user: user, period: period, reason: reason)
+      let fulfillment = Fulfillment.compliments(contexts: [
+        payload.fullContext(lifespanCount: 0, params: .init()),
+        payload.followupContext(lifespanCount: 0, params: .init())]
+      )
+
       return middleware <| conn.map(const(fulfillment .*. absenceRequest))
     }
   }
