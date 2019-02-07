@@ -19,13 +19,16 @@ import Prelude
 
 
 
-      extension PartialIso where A == Prelude.Unit, B == Route {
-        public static let slack = parenthesize <| PartialIso<Prelude.Unit, Route>(
-          apply: const(.some(.slack)),
-          unapply: {
-            guard case .slack = $0 else { return nil }
-            return .some(Prelude.unit)
-        })
+      extension PartialIso where A == (
+            InteractiveMessageAction
+        ), B == Route {
+
+          public static let slack = parenthesize <| PartialIso(
+            apply: Route.slack,
+            unapply: {
+              guard case let .slack(result) = $0 else { return nil }
+              return .some(result)
+          })
       }
 
 

@@ -74,7 +74,7 @@ public struct Slack {
         case actions
       }
       
-      public struct InteractiveAction: Codable {
+      public struct InteractiveAction: Codable, Equatable {
         public private(set) var name: String
         public private(set) var text: String?
         public private(set) var type: String

@@ -1,8 +1,10 @@
+import ApplicativeRouter
 import Foundation
+import Prelude
 
 public struct InteractiveMessageAction {
   public private(set) var actions: [Slack.Message.Attachment.InteractiveAction]
-  public private(set) var callbackId: UUID
+  public private(set) var callbackId: String
   public private(set) var user: User
   public private(set) var channel: Channel
   public private(set) var responseURL: URL
@@ -32,10 +34,10 @@ public struct InteractiveMessageAction {
   }
 }
 
-extension InteractiveMessageAction: Codable {}
-extension InteractiveMessageAction.Message: Codable {}
-extension InteractiveMessageAction.User: Codable {}
-extension InteractiveMessageAction.Channel: Codable {}
+extension InteractiveMessageAction: Codable, Equatable {}
+extension InteractiveMessageAction.Message: Codable, Equatable {}
+extension InteractiveMessageAction.User: Codable, Equatable {}
+extension InteractiveMessageAction.Channel: Codable, Equatable {}
 
 //todo:
 

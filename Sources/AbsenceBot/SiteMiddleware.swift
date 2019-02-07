@@ -34,7 +34,7 @@ private func render(conn: Conn<StatusLineOpen, Route>)
       return conn.map(const(unit))
         |> writeStatus(.ok)
         >=> respond(text: "Hello world!")
-    case .slack:
+    case .slack(let message):
       return conn.map(const(unit))
         |> writeStatus(.ok)
         >=> respond(text: "Slack!")
