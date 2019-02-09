@@ -7,7 +7,7 @@ import Prelude
 import Tuple
 import Html
 
-public let siteMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit, Data> =
+public let appMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit, Data> =
   requestLogger { Current.logger.info($0) }
     <<< responseTimeout(25)
     <<< requireHttps(allowedInsecureHosts: allowedInsecureHosts)
