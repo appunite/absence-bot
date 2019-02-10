@@ -39,6 +39,13 @@ extension InteractiveMessageAction.Message: Codable, Equatable {}
 extension InteractiveMessageAction.User: Codable, Equatable {}
 extension InteractiveMessageAction.Channel: Codable, Equatable {}
 
+extension InteractiveMessageAction {
+  public func pendingFallback() -> InteractiveMessageFallback {
+    return .init(text: self.originalMessage.text, attachment: .pendingAttachement(reviewer: self.user.id))
+  }
+}
+
+
 //todo:
 
 /*
