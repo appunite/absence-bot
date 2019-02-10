@@ -35,10 +35,12 @@ public struct EnvVars: Codable {
   public struct Slack: Codable {
     public var channel = "#random"
     public var token = "xoxb-1115164490-464545011382-76zUKi9AzSM2GG7RfAXvVHfW"
-    
+    public var signature = "password"
+
     private enum CodingKeys: String, CodingKey {
       case channel = "SLACK_ANNOUNCEMENT_CHANNEL"
       case token = "SLACK_AUTH_TOKEN"
+      case signature = "SLACK_VERIFICATION_TOKEN"
     }
   }
   

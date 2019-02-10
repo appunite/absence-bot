@@ -8,7 +8,7 @@ import Tuple
 
 let calendarMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
   pendingMiddleware
-    >>> validateSlackSignature(signature: "abs")
+    >>> validateSlackSignature(signature: Current.envVars.slack.signature)
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
 public func validateSlackSignature<A>(
