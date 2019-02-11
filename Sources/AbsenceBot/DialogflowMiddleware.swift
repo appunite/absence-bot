@@ -80,7 +80,7 @@ private func fulfillmentMiddleware(
       guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
         else { return middleware <| conn.map(const(Fulfillment.missingReason .*. nil)) }
       
-      guard let period = period(parameters: followupContext.parameters, tz: user.timezone)
+      guard let period = period(parameters: followupContext.parameters, tz: user.tz)
         else { return middleware <| conn.map(const(Fulfillment.missingPeriod .*. nil)) }
       
       if case .accept = payload.action {

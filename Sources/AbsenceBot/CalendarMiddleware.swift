@@ -7,8 +7,9 @@ import Prelude
 import Tuple
 
 let calendarMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
-  pendingMiddleware
-    >>> validateSlackSignature(signature: Current.envVars.slack.signature)
+//  pendingMiddleware
+  rejectionMiddleware
+//    >>> validateSlackSignature(signature: Current.envVars.slack.signature)
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
 public func validateSlackSignature<A>(
@@ -26,7 +27,6 @@ public func validateSlackSignature<A>(
       }
     }
 }
-
 
 private func pendingMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
@@ -164,4 +164,121 @@ fatalError()
 //          )
 //        }
 //    }
+}
+
+private func googleAccessTokenMiddleware<A>(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.AccessToken, A>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<InteractiveMessageAction, A>, Data> {
+
+  return { conn in
+    return Current.calendar.fetchAuthToken()
+      .run
+      .flatMap { errorOrUser in
+        switch errorOrUser {
+        case let .right(.right(token)):
+          return conn.map(const(conn.data.first .*. token .*. conn.data.second))
+            |> middleware
+          
+        case let .right(.left(e)):
+          return conn
+            |> internalServerError(respond(text: e.error.rawValue))
+          
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
+}
+
+private func slackUserMiddleware<A>(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Slack.User, A>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<InteractiveMessageAction, A>, Data> {
+  
+  return { conn in
+    return Current.slack.fetchUser(conn.data.first.user.id)
+      .run
+      .flatMap { errorOrUser in
+        switch errorOrUser {
+        case let .right(.right(payload)):
+          return conn.map(const(conn.data.first .*. payload.user .*. conn.data.second))
+            |> middleware
+          
+        case let .right(.left(e)):
+          return conn
+            |> internalServerError(respond(text: e.error))
+          
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
+}
+
+private func createCalendarEventMiddleware<A>(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.Event, A>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.AccessToken, A>, Data> {
+  
+  return { conn in
+    
+    let (action, token) = (get1(conn.data), get2(conn.data))
+
+    let event = GoogleCalendar.Event(
+      id: nil,
+      colorId: 1,
+      htmlLink: nil,
+      created: nil,
+      updated: nil,
+      summary: "T##String?",
+      description: "T##String?",
+      attendees: [.init(email: "emil@appunite.com", displayName: "Emil Wojtaszek")],
+      start: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil),
+      end: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil))
+
+    return Current.calendar.createEvent(token, event)
+      .run
+      .flatMap { errorOrEvent in
+        switch errorOrEvent {
+        case let .right(event):
+          return conn.map(const(action .*. event .*. rest(conn.data)))
+            |> middleware
+
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
+}
+
+private func rejectionMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
+  
+  return { conn in
+    guard let absence = conn.data.absence else {
+      return conn
+        |> internalServerError(respond(text: "Can't decode absence payload data."))
+    }
+
+    return Current.slack.postMessage(.rejectionNotificationMessage(requester: absence.user.id))
+      .run
+      .flatMap { errorOrUser in
+        switch errorOrUser {
+        case .right(.right):
+          // send fallback message about action result
+          return conn.map(const(conn.data.rejectionFallback(requester: absence.user.id)))
+            |> middleware
+
+        case let .right(.left(e)):
+          return conn
+            |> internalServerError(respond(text: e.error))
+          
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
 }

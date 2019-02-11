@@ -21,7 +21,7 @@ extension Fulfillment {
 
   public static func confirmation(absence: Absence, context: Context) -> Fulfillment {
     let periodString = absence.period
-      .dateRange(tz: absence.user.timezone)
+      .dateRange(tz: absence.user.tz)
 
     let fulfillment = { Fulfillment(text: $0, contexts: [context]) }
 

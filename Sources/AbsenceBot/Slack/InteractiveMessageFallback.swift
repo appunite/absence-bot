@@ -27,11 +27,11 @@ extension InteractiveMessageFallback {
 extension InteractiveMessageFallback: Codable {}
 
 extension Slack.Message.Attachment {
-  public static func approvedAttachement(reviewer: String, requester: String, eventLink: String) -> Slack.Message.Attachment {
+  public static func acceptanceAttachement(reviewer: String, requester: String, eventLink: String) -> Slack.Message.Attachment {
     return .init(text: "Thank you, <@\(reviewer)>, for making this decision! I've already created the <\(eventLink)|event> in absence calendar and I'll notify <@\(requester)> about this fact", fallback: nil, callbackId: nil, actions: nil)
   }
   
-  public static func rejectedAttachement(reviewer: String, requester: String) -> Slack.Message.Attachment {
+  public static func rejectionAttachement(reviewer: String, requester: String) -> Slack.Message.Attachment {
     return .init(
       text: "Thank you, <@\(reviewer)>, for making this decision! I'll notify <@\(requester)> about rejecting absence request", fallback: nil, callbackId: nil, actions: nil)
   }

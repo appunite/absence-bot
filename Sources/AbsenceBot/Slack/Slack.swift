@@ -20,27 +20,31 @@ public struct Slack {
     postMessage: AbsenceBot.postMessage >>> runSlack
   )
 
-  public struct UserPayload: Codable {
+  public struct UserPayload: Codable, Equatable  {
     public private(set) var user: User
   }
   
-  public struct User {
+  public struct User: Codable, Equatable {
     public private(set) var id: String
-    public private(set) var team: String
-    public private(set) var name: String
-    public private(set) var email: String
-    public private(set) var timezone: TimeZone
-    
-    private enum CustomCodingKeys: String, CodingKey {
+    public private(set) var profile: Profile
+    public private(set) var tz: TimeZone
+
+    private enum CodingKeys: String, CodingKey {
       case id
-      case name = "real_name"
       case profile
-      case timezone = "tz_offset"
+      case tz = "tz_offset"
     }
-    
-    private enum ProfileCodingKeys: String, CodingKey {
-      case team
-      case email
+
+    public struct Profile: Codable, Equatable {
+      public private(set) var name: String
+      public private(set) var email: String
+      public private(set) var team: String
+
+      private enum CodingKeys: String, CodingKey {
+        case name = "real_name"
+        case email
+        case team
+      }
     }
   }
 
@@ -103,23 +107,26 @@ extension Slack.File {
   }
 }
 
-extension Slack.User: Encodable {}
-extension Slack.User: Decodable {
+extension Slack.User {
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder
+      .container(keyedBy: CodingKeys.self)
+    try container.encode(self.id, forKey: .id)
+    try container.encode(self.tz.secondsFromGMT(), forKey: .tz)
+    try container.encode(self.profile, forKey: .profile)
+  }
+
   public init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CustomCodingKeys.self)
-    
+    let container = try decoder
+      .container(keyedBy: CodingKeys.self)
+
     // user basic info
     self.id = try container.decode(String.self, forKey: .id)
-    self.name = try container.decode(String.self, forKey: .name)
-    
+    self.profile = try container.decode(Profile.self, forKey: .profile)
+
     // parse time-zone
-    let timezoneOffset = try container.decode(Int.self, forKey: .timezone)
-    self.timezone = TimeZone(secondsFromGMT: timezoneOffset)!
-    
-    // email
-    let profile = try container.nestedContainer(keyedBy: ProfileCodingKeys.self, forKey: .profile)
-    self.team = try profile.decode(String.self, forKey: .team)
-    self.email = try profile.decode(String.self, forKey: .email)
+    let timezoneOffset = try container.decode(Int.self, forKey: .tz)
+    self.tz = TimeZone(secondsFromGMT: timezoneOffset)!
   }
 }
 
@@ -169,14 +176,14 @@ private let slackJsonDecoder = JSONDecoder()
 private let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
 
-
+import MessagePack
 extension Slack.Message {
-  public static func announcementMessage(absence: Absence)  -> Slack.Message {
+  public static func announcementMessage(absence: Absence) -> Slack.Message {
     // generate attachement
     let attachment = Slack.Message.Attachment(
       text: "Let me know what you think about this.",
       fallback: "Absence acceptance interactive message",
-      callbackId: "id", //todo
+      callbackId: try! MessagePackEncoder().encode(absence).base64EncodedString(),
       actions: [
         .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
         .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
@@ -191,4 +198,9 @@ extension Slack.Message {
     // generate message
     return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])
   }
+  
+  static func rejectionNotificationMessage(requester: String) -> Slack.Message {
+    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: requester, attachments: [])
+  }
+
 }

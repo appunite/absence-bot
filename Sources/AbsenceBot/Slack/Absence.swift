@@ -2,17 +2,17 @@ import Foundation
 import Prelude
 import Optics
 
-public struct Absence: Codable {
+public struct Absence: Codable, Equatable {
   public private(set) var user: Slack.User
   public private(set) var period: Period
   public private(set) var reason: Reason
 
-  public struct Period: Codable {
+  public struct Period: Codable, Equatable {
     public private(set) var startedAt: Date
     public private(set) var finishedAt: Date
   }
 
-  public enum Reason: String, Codable, RawRepresentable {
+  public enum Reason: String, Codable, RawRepresentable, Equatable {
     case illness
     case holiday
     case remote
