@@ -69,6 +69,14 @@ public func zip<A, B, C>(with transform: @escaping (A, B) -> C) -> (A?, B?) -> C
   return { zip($0, $1).map(transform) }
 }
 
+public func zip2<A, B>(_ lhs: Parallel<A>, _ rhs: Parallel<B>) -> Parallel<(A, B)> {
+  return tuple <¢> lhs <*> rhs
+}
+
+public func zip3<A, B, C>(_ a: Parallel<A>, _ b: Parallel<B>, _ c: Parallel<C>) -> Parallel<(A, B, C)> {
+  return tuple3 <¢> a <*> b <*> c
+}
+
 // Calendar
 
 extension Calendar {
