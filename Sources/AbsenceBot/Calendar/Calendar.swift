@@ -51,14 +51,14 @@ public struct GoogleCalendar {
     public private(set) var created: Date?
     public private(set) var updated: Date?
     public private(set) var summary: String
-    public private(set) var description: String
-    public private(set) var attendees: [Actor]
+    public private(set) var description: String?
     public private(set) var start: DateTime
     public private(set) var end: DateTime
+    public private(set) var attendees: [Actor]
 
     public struct Actor: Codable {
       public var email: String
-      public var displayName: String
+      public var displayName: String?
     }
 
     public struct DateTime {

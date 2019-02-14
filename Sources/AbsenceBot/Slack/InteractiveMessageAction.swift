@@ -15,13 +15,13 @@ public struct InteractiveMessageAction {
   }
   
   public struct User {
-    public private(set) var id: String
-    public private(set) var name: String
+    public private(set) var id: Slack.User.Id
+//    public private(set) var name: String
   }
   
   public struct Channel {
     public private(set) var id: String
-    public private(set) var name: String
+//    public private(set) var name: String
   }
   
   enum CodingKeys: String, CodingKey {
@@ -47,14 +47,14 @@ extension InteractiveMessageAction {
     )
   }
 
-  public func rejectionFallback(requester: String) -> InteractiveMessageFallback {
+  public func rejectionFallback(requester: Slack.User.Id) -> InteractiveMessageFallback {
     return .init(
       text: self.originalMessage.text,
       attachment: .rejectionAttachement(reviewer: self.user.id, requester: requester)
     )
   }
 
-  public func acceptanceFallback(requester: String, eventLink: URL?) -> InteractiveMessageFallback {
+  public func acceptanceFallback(requester: Slack.User.Id, eventLink: URL?) -> InteractiveMessageFallback {
     return .init(
       text: self.originalMessage.text,
       attachment: .acceptanceAttachement(reviewer: self.user.id, requester: requester, eventLink: eventLink)

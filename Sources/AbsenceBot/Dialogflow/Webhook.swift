@@ -2,7 +2,7 @@ import Foundation
 
 public struct Webhook: Codable, Equatable {
   public private(set) var session: URL
-  public private(set) var user: String?
+  public private(set) var user: Slack.User.Id?
   public private(set) var action: Action
   public private(set) var outputContexts: [Context]
   
@@ -61,7 +61,7 @@ public struct Webhook: Codable, Equatable {
       .nestedContainer(keyedBy: Webhook.SlackDataCodingKeys.self, forKey: .data)
     let user = try event
       .nestedContainer(keyedBy: Webhook.SlackEventCodingKeys.self, forKey: .event)
-    self.user = try user.decodeIfPresent(String.self, forKey: .user)
+    self.user = try user.decodeIfPresent(Slack.User.Id.self, forKey: .user)
   }
 }
 
@@ -75,4 +75,16 @@ public let dialogflowJsonDecoder: JSONDecoder = { () in
   }
   
   return decoder
+}()
+
+public let dialogflowJsonEncoder: JSONEncoder = { () in
+  let encoder = JSONEncoder()
+  
+  if #available(OSX 10.12, *) {
+    encoder.dateEncodingStrategy = .iso8601
+  } else {
+    fatalError()
+  }
+  
+  return encoder
 }()

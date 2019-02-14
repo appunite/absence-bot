@@ -100,13 +100,13 @@ private func rejectionMiddleware(
         |> internalServerError(respond(text: "Can't decode absence payload data."))
     }
 
-    return Current.slack.postMessage(.rejectionNotificationMessage(requester: absence.user.id))
+    return Current.slack.postMessage(.rejectionNotificationMessage(requester: absence.requesterId))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
         case .right(.right):
           // send fallback message about action result
-          return conn.map(const(conn.data.rejectionFallback(requester: absence.user.id)))
+          return conn.map(const(conn.data.rejectionFallback(requester: absence.requesterId)))
             |> middleware
 
         case let .right(.left(e)):
@@ -131,7 +131,7 @@ private func acceptanceComponentsMiddleware(
     }
 
     // fetch requester user
-    let requesterUser = Current.slack.fetchUser(absence.user.id)
+    let requesterUser = Current.slack.fetchUser(absence.requesterId)
       .run
       .parallel
       .map { $0.right?.right?.user }
@@ -174,7 +174,8 @@ private func acceptanceComponentsMiddleware(
           else { return conn |> internalServerError(respond(text: "Can't fetch token.")) }
 
         let updatedAbsence = absence
-          |> \.user .~ requesterUser
+          |> \.requester .~ .right(requesterUser)
+          |> \.reviewer .~ reviewerUser
 
         return conn.map(const(updatedAbsence .*. token .*. conn.data))
           |> middleware
@@ -214,13 +215,13 @@ private func acceptanceMessagesMiddleware(
     let (action, absence, event) = (get1(conn.data), get2(conn.data), rest(conn.data))
 
     return Current.slack
-      .postMessage(.acceptanceNotificationMessage(channel: absence.user.id, eventLink: event.htmlLink, reason: absence.reason))
+      .postMessage(.acceptanceNotificationMessage(channel: absence.requesterId.rawValue, eventLink: event.htmlLink, reason: absence.reason))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
         case .right(.right):
           // send fallback message about action result
-          return conn.map(const(action.acceptanceFallback(requester: absence.user.id, eventLink: event.htmlLink)))
+          return conn.map(const(action.acceptanceFallback(requester: absence.requesterId, eventLink: event.htmlLink)))
             |> middleware
           
         case let .right(.left(e)):
@@ -236,17 +237,21 @@ private func acceptanceMessagesMiddleware(
 }
 
 private func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
-  return GoogleCalendar.Event(
+  return .init(
     id: nil,
     colorId: "2",
     htmlLink: nil,
     created: nil,
     updated: nil,
-    summary: "\(absence.user.profile.name) - \(absence.reason.rawValue)",
-    description: "nil",
-    attendees: [.init(email: absence.user.profile.email, displayName: absence.user.profile.name)],
+    summary: "\(absence.requester.right!.profile!.name) - \(absence.reason.rawValue)",
+    description: nil,
     start: startDateTime(from: absence.period),
-    end: endDateTime(from: absence.period))
+    end: endDateTime(from: absence.period),
+    attendees: [
+      .init(email: absence.requester.right!.profile!.email, displayName: absence.requester.right!.profile!.name),
+      .init(email: absence.reviewer!.profile!.email, displayName: absence.reviewer!.profile!.name)
+    ]
+  )
 }
 
 private func startDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {

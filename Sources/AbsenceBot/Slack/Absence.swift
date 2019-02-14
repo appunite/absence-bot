@@ -1,12 +1,16 @@
+import Either
 import Foundation
+import HttpPipeline
 import Prelude
 import Optics
+import UrlFormEncoding
 
 public struct Absence: Codable, Equatable {
-  public var user: Slack.User
+  public var requester: Either<Slack.User.Id, Slack.User>
   public var period: Period
   public var reason: Reason
-
+  public var reviewer: Slack.User?
+  
   public struct Period: Codable, Equatable {
     public var startedAt: Date
     public var finishedAt: Date
@@ -18,6 +22,17 @@ public struct Absence: Codable, Equatable {
     case remote
     case conference
     case school
+  }
+}
+
+extension Absence {
+  public var requesterId: Slack.User.Id {
+    switch requester {
+    case .left(let id):
+      return id
+    case .right(let user):
+      return user.id
+    }
   }
 }
 

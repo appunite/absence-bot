@@ -6,7 +6,7 @@ import UrlFormEncoding
 
 public struct Slack {
   /// Fetches a Slack user profile by id.
-  public var fetchUser: (String) -> EitherIO<Error, Either<SlackError, UserPayload>>
+  public var fetchUser: (Slack.User.Id) -> EitherIO<Error, Either<SlackError, UserPayload>>
 
   /// Post message on channel
   public var uploadFile: (File) -> EitherIO<Error, Either<SlackError, StatusPayload>>
@@ -25,9 +25,12 @@ public struct Slack {
   }
   
   public struct User: Codable, Equatable {
-    public private(set) var id: String
-    public private(set) var profile: Profile
+    public typealias Id = Tagged<User, String>
+    public private(set) var id: Id
+    
+    public private(set) var profile: Profile?
     public private(set) var tz: TimeZone
+
 
     private enum CodingKeys: String, CodingKey {
       case id
@@ -38,12 +41,10 @@ public struct Slack {
     public struct Profile: Codable, Equatable {
       public private(set) var name: String
       public private(set) var email: String
-      public private(set) var team: String
 
       private enum CodingKeys: String, CodingKey {
         case name = "real_name"
         case email
-        case team
       }
     }
   }
@@ -121,7 +122,7 @@ extension Slack.User {
       .container(keyedBy: CodingKeys.self)
 
     // user basic info
-    self.id = try container.decode(String.self, forKey: .id)
+    self.id = try container.decode(Slack.User.Id.self, forKey: .id)
     self.profile = try container.decode(Profile.self, forKey: .profile)
 
     // parse time-zone
@@ -130,7 +131,7 @@ extension Slack.User {
   }
 }
 
-func fetchUser(with id: String) -> DecodableRequest<Either<Slack.SlackError, Slack.UserPayload>> {
+func fetchUser(with id: Slack.User.Id) -> DecodableRequest<Either<Slack.SlackError, Slack.UserPayload>> {
   return DecodableRequest(
     rawValue: URLRequest(url: URL(string: "https://slack.com/api/users.info?user=\(id)")!)
       |> \.httpMethod .~ "GET"
@@ -179,11 +180,18 @@ private let slackJsonEncoder = JSONEncoder()
 import MessagePack
 extension Slack.Message {
   public static func announcementMessage(absence: Absence) -> Slack.Message {
+    let rawAbsence = absence
+      |> \.requester .~ .left(absence.requesterId)
+
+    let payload = try! MessagePackEncoder()
+      .encode(rawAbsence)
+      .base64EncodedString()
+
     // generate attachement
     let attachment = Slack.Message.Attachment(
       text: "Let me know what you think about this.",
       fallback: "Absence acceptance interactive message",
-      callbackId: try! MessagePackEncoder().encode(absence).base64EncodedString(),
+      callbackId: payload,
       actions: [
         .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
         .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
@@ -193,14 +201,14 @@ extension Slack.Message {
     let period = absence.period.dateRange(tz: Current.hqTimeZone())
 
     // generate text // get2(conn.data)!.name
-    let text = "<@\(absence.user.id)> is asking for vacant \(period) because of the \(absence.reason.rawValue)."
+    let text = "<@\(absence.requesterId)> is asking for vacant \(period) because of the \(absence.reason.rawValue)."
     
     // generate message
     return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])
   }
   
-  public static func rejectionNotificationMessage(requester: String) -> Slack.Message {
-    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: requester, attachments: [])
+  public static func rejectionNotificationMessage(requester: Slack.User.Id) -> Slack.Message {
+    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: requester.rawValue, attachments: [])
   }
   
   public static func acceptanceNotificationMessage(channel: String, eventLink: URL?, reason: Absence.Reason) -> Slack.Message {
