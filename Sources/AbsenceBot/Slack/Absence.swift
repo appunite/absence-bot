@@ -91,3 +91,52 @@ extension Absence.Period {
       .joined(separator: " - ")
   }
 }
+
+internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
+  return .init(
+    id: nil,
+    colorId: absence.reason.colorId,
+    htmlLink: nil,
+    created: nil,
+    updated: nil,
+    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue)",
+    description: nil,
+    start: startDateTime(from: absence.period),
+    end: endDateTime(from: absence.period),
+    attendees: [
+      .init(email: absence.requester.right!.profile.email, displayName: absence.requester.right!.profile.name),
+      .init(email: absence.reviewer!.profile.email, displayName: absence.reviewer!.profile.name)
+    ]
+  )
+}
+
+private func startDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
+  return .init(
+    date: period.isAllDay ? period.startedAt : nil,
+    dateTime: !period.isAllDay ? period.startedAt : nil
+  )
+}
+
+private func endDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
+  return .init(
+    date: period.isAllDay ? period.finishedAt : nil,
+    dateTime: !period.isAllDay ? period.finishedAt : nil
+  )
+}
+
+extension Absence.Reason {
+  public var colorId: String {
+    switch self {
+    case .illness:
+      return "11"
+    case .holiday:
+      return "10"
+    case .remote:
+      return "7"
+    case .conference:
+      return "3"
+    case .school:
+      return "5"
+    }
+  }
+}

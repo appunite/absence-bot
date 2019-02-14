@@ -226,35 +226,3 @@ private func acceptanceMessagesMiddleware(
     }
   }
 }
-
-private func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
-  return .init(
-    id: nil,
-    colorId: "2",
-    htmlLink: nil,
-    created: nil,
-    updated: nil,
-    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue)",
-    description: nil,
-    start: startDateTime(from: absence.period),
-    end: endDateTime(from: absence.period),
-    attendees: [
-      .init(email: absence.requester.right!.profile.email, displayName: absence.requester.right!.profile.name),
-      .init(email: absence.reviewer!.profile.email, displayName: absence.reviewer!.profile.name)
-    ]
-  )
-}
-
-private func startDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
-  if period.isAllDay {
-    return .init(date: period.startedAt, dateTime: nil)
-  }
-  return .init(date: nil, dateTime: period.startedAt)
-}
-
-private func endDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
-  if period.isAllDay {
-    return .init(date: period.finishedAt, dateTime: nil)
-  }
-  return .init(date: nil, dateTime: period.finishedAt)
-}
