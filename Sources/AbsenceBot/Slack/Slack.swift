@@ -212,7 +212,7 @@ extension Slack.Message {
   
   public static func acceptanceNotificationMessage(channel: String, eventLink: URL?, reason: Absence.Reason) -> Slack.Message {
     // generate attachement
-    let attachment = Slack.Message.Attachment(text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n \(imgeCompanyAddress.split(separator: "\n").map { ">" + $0 }.joined(separator: "\n"))", fallback: nil, callbackId: nil, actions: nil)
+    let attachment = Slack.Message.Attachment(text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n ```\(imgeCompanyAddress)```", fallback: nil, callbackId: nil, actions: nil)
 
     // generate message
     let message = {
