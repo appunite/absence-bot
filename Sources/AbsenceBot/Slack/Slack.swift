@@ -177,13 +177,12 @@ private let slackJsonDecoder = JSONDecoder()
 private let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
 
-import MessagePack
 extension Slack.Message {
   public static func announcementMessage(absence: Absence) -> Slack.Message {
     let rawAbsence = absence
       |> \.requester .~ .left(absence.requesterId)
 
-    let payload = try! MessagePackEncoder()
+    let payload = try! JSONEncoder()
       .encode(rawAbsence)
       .base64EncodedString()
 

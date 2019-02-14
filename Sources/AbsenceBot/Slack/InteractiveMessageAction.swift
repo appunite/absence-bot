@@ -62,11 +62,10 @@ extension InteractiveMessageAction {
   }
 }
 
-import MessagePack
 extension InteractiveMessageAction {
   public var absence: Absence? {
     return Data(base64Encoded: self.callbackId)
-      .flatMap { try? MessagePackDecoder().decode(Absence.self, from: $0)}
+      .flatMap { try? JSONDecoder().decode(Absence.self, from: $0)}
   }
 }
 
