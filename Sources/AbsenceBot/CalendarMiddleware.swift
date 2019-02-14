@@ -7,13 +7,15 @@ import Prelude
 import Tuple
 import Cryptor
 
-let calendarMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
-//  rejectionMiddleware
-
+let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
   validateSlackSignature(signature: Current.envVars.slack.secret)
-    <<< acceptanceComponentsMiddleware
-    <<< acceptanceCalendarEventMiddleware
-    <<< acceptanceMessagesMiddleware
+    <<< filter(
+      ^\.isAccepted,
+      or: sendRejectionMessagesMiddleware
+        <| writeStatus(.ok) >=> respond(encoder: JSONEncoder()))
+    <<< fetchAcceptanceComponentsMiddleware
+    <<< createCalendarEventMiddleware
+    <<< sendAcceptanceMessagesMiddleware
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
 public func validateSlackSignature<A>(
@@ -44,7 +46,7 @@ public func validateSlackSignature<A>(
     }
 }
 
-private func rejectionMiddleware(
+private func sendRejectionMessagesMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
   
@@ -54,7 +56,7 @@ private func rejectionMiddleware(
         |> internalServerError(respond(text: "Can't decode absence payload data."))
     }
 
-    return Current.slack.postMessage(.rejectionNotificationMessage(requester: absence.requesterId))
+    return Current.slack.postMessage(.rejectionNotificationMessage(absence: absence))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
@@ -75,7 +77,7 @@ private func rejectionMiddleware(
   }
 }
 
-private func acceptanceComponentsMiddleware(
+private func fetchAcceptanceComponentsMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<GoogleCalendar.AccessToken, Absence>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
   
@@ -124,7 +126,7 @@ private func acceptanceComponentsMiddleware(
   }
 }
 
-private func acceptanceCalendarEventMiddleware(
+private func createCalendarEventMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Absence, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, T2<GoogleCalendar.AccessToken, Absence>, Data> {
   
@@ -151,13 +153,13 @@ private func acceptanceCalendarEventMiddleware(
   }
 }
 
-private func acceptanceMessagesMiddleware(
+private func sendAcceptanceMessagesMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
   return { conn in
     return Current.slack
-      .postMessage(.acceptanceNotificationMessage(channel: conn.data.requesterId.rawValue, eventLink: conn.data.event?.htmlLink, reason: conn.data.reason))
+      .postMessage(.acceptanceNotificationMessage(absence: conn.data))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {

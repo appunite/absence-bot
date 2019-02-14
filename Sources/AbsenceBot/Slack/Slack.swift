@@ -89,6 +89,17 @@ public struct Slack {
           case accept
           case reject
         }
+        
+        public var isAccepted: Bool {
+          if case .accept = value {
+            return true
+          }
+          return false
+        }
+        
+        public var isRejected: Bool {
+          return !isAccepted
+        }
       }
     }
   }
@@ -215,20 +226,20 @@ extension Slack.Message {
       attachments: [.announcementAttachment(absence: absence)])
   }
   
-  public static func rejectionNotificationMessage(requester: Slack.User.Id) -> Slack.Message {
-    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: requester.rawValue, attachments: [])
+  public static func rejectionNotificationMessage(absence: Absence) -> Slack.Message {
+    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: absence.requesterId.rawValue, attachments: [])
   }
   
-  public static func acceptanceNotificationMessage(channel: String, eventLink: URL?, reason: Absence.Reason) -> Slack.Message {
+  public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
     // generate attachement
     let attachment = Slack.Message.Attachment(text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n ```\(imgeCompanyAddress)```", fallback: nil, callbackId: nil, actions: nil)
 
     // generate message
     let message = {
-      Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(eventLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: channel, attachments: $0)
+      Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.requesterId.rawValue, attachments: $0)
     }
 
-    switch reason {
+    switch absence.reason {
     case .illness:
       return message([attachment])
     default:

@@ -34,12 +34,12 @@ private func render(conn: Conn<StatusLineOpen, Route>)
       return conn.map(const(unit))
         |> writeStatus(.ok)
         >=> respond(text: "Hello world!")
-    case .slack(let message):
-      return conn.map(const(message))
-        |> calendarMiddleware
     case .dialogflow(let payload):
       return conn.map(const(payload))
         |> dialogflowMiddleware
+    case .slack(let message):
+      return conn.map(const(message))
+        |> slackInteractiveMessageActionMiddleware
     }
 }
 

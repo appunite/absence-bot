@@ -26,6 +26,16 @@ public struct InteractiveMessageAction {
   }
 }
 
+extension InteractiveMessageAction {
+  public var isAccepted: Bool {
+    return self.actions.first?.isAccepted ?? false
+  }
+
+  public var isRejected: Bool {
+    return self.actions.first?.isRejected ?? false
+  }
+}
+
 extension InteractiveMessageAction: Codable, Equatable {}
 extension InteractiveMessageAction.Message: Codable, Equatable {}
 extension InteractiveMessageAction.User: Codable, Equatable {}
