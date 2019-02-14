@@ -155,16 +155,15 @@ extension Absence.Reason {
   public var emoji: String {
     switch self {
     case .illness:
-      return ["🤧","🤒", "😷"].randomElement()!
+      return ["🤕", "🤧","🤒", "😷", "🤮"].randomElement()!
     case .holiday:
-      return ["🏄‍♂️", "☀", "🍹"].randomElement()!
+      return ["🏄‍♂️", "🌴", "🍹", "🏖", "⛱"].randomElement()!
     case .remote:
-      return ["👻", "👨‍💻"].randomElement()!
+      return ["👻", "👨‍💻", "🏡", "👀"].randomElement()!
     case .conference:
-      return ["👨‍🔬"].randomElement()!
+      return ["👨‍🔬", "👨‍🏫", "🧠", "✍️"].randomElement()!
     case .school:
-      return ["🎓"].randomElement()!
+      return ["🎓", "🦉", "😱", "🤯"].randomElement()!
     }
   }
-
 }
