@@ -44,56 +44,6 @@ public func validateSlackSignature<A>(
     }
 }
 
-private func googleAccessTokenMiddleware<A>(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.AccessToken, A>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<InteractiveMessageAction, A>, Data> {
-
-  return { conn in
-    return Current.calendar.fetchAuthToken()
-      .run
-      .flatMap { errorOrUser in
-        switch errorOrUser {
-        case let .right(.right(token)):
-          return conn.map(const(conn.data.first .*. token .*. conn.data.second))
-            |> middleware
-          
-        case let .right(.left(e)):
-          return conn
-            |> internalServerError(respond(text: e.error.rawValue))
-          
-        case let .left(e):
-          return conn
-            |> internalServerError(respond(text: e.localizedDescription))
-        }
-    }
-  }
-}
-
-private func slackUserMiddleware<A>(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Slack.User, A>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<InteractiveMessageAction, A>, Data> {
-  
-  return { conn in
-    return Current.slack.fetchUser(conn.data.first.user.id)
-      .run
-      .flatMap { errorOrUser in
-        switch errorOrUser {
-        case let .right(.right(payload)):
-          return conn.map(const(conn.data.first .*. payload.user .*. conn.data.second))
-            |> middleware
-          
-        case let .right(.left(e)):
-          return conn
-            |> internalServerError(respond(text: e.error))
-          
-        case let .left(e):
-          return conn
-            |> internalServerError(respond(text: e.localizedDescription))
-        }
-    }
-  }
-}
-
 private func rejectionMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
