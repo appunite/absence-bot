@@ -163,3 +163,25 @@ extension Date {
     return calendar.date(from: dateComponentsB)
   }
 }
+
+extension Data {
+  public func hexEncodedString() -> String {
+    return map { String(format: "%02hhx", $0) }.joined()
+  }
+}
+
+public func requireSome<A>(_ e: Either<Error, A?>) -> Either<Error, A> {
+  switch e {
+  case let .left(e):
+    return .left(e)
+  case let .right(a):
+    return a.map(Either.right) ?? .left(unit)
+  }
+}
+
+extension URLRequest {
+  public func httpHeaderFieldsValue(_ key: String) -> String? {
+    return allHTTPHeaderFields?
+      .first(where: { $0.key == key })?.value
+  }
+}

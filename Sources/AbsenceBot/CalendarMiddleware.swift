@@ -5,11 +5,12 @@ import HttpPipeline
 import Optics
 import Prelude
 import Tuple
+import Cryptor
 
 let calendarMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
 //  rejectionMiddleware
-  
-  validateSlackSignature(signature: Current.envVars.slack.signature)
+
+  validateSlackSignature(signature: Current.envVars.slack.secret)
     <<< acceptanceComponentsMiddleware
     <<< acceptanceCalendarEventMiddleware
     <<< acceptanceMessagesMiddleware
@@ -23,21 +24,24 @@ public func validateSlackSignature<A>(
   -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
     return { middleware in
       return { conn in
-        guard let header = conn.request.allHTTPHeaderFields?.first(where: { $0.key == "X-Slack-Signature" }), header.value == signature
-          else { return conn |> unprocessableEntityError(failure) }
-        
-        return middleware(conn)
+        let signatureBasicString = zip(with: { "v0:\($0):\($1)" })(
+          conn.request.httpHeaderFieldsValue("X-Slack-Request-Timestamp"),
+          conn.request.httpBody.flatMap { String(data: $0, encoding: .utf8) }
+        ).flatMap { $0.data(using: .utf8) }
+
+        let signature = signature
+          .data(using: .utf8)
+          .flatMap { HMAC(using: .sha256, key: $0).update(data: signatureBasicString!)?.final() }
+          .flatMap { Data(bytes: $0).hexEncodedString() }
+          .map {"v0=\($0)" }
+
+        if conn.request.httpHeaderFieldsValue("X-Slack-Signature") == signature {
+          return middleware(conn)
+        }
+
+        return conn |> unprocessableEntityError(failure)
       }
     }
-}
-
-public func requireSome<A>(_ e: Either<Error, A?>) -> Either<Error, A> {
-  switch e {
-  case let .left(e):
-    return .left(e)
-  case let .right(a):
-    return a.map(Either.right) ?? .left(unit)
-  }
 }
 
 private func googleAccessTokenMiddleware<A>(
@@ -151,27 +155,14 @@ private func acceptanceComponentsMiddleware(
     return zip3(requesterUser, reviewerUser, token)
       .sequential
       .flatMap { x in
-        
-//        zip(with: {
-//          let updatedAbsence = absence
-//            |> \.user .~ $0
-//
-//          return conn.map(const(updatedAbsence .*. $2 .*. conn.data))
-//            |> middleware
-//        })(c.0, c.1, c.2)
-//
-//        guard let x = zip(c.0, zip(c.1, c.2)).map ({ ($0.0, $0.1.0, $0.1.1)}) else {
-//          fatalError()
-//        }
-        
         guard let requesterUser = x.0
-          else { return conn |> internalServerError(respond(text: "Can't fetch user.")) }
+          else { return conn |> internalServerError(respond(text: "Can't fetch requester slack user.")) }
 
         guard let reviewerUser = x.1
-          else { return conn |> internalServerError(respond(text: "Can't fetch user.")) }
+          else { return conn |> internalServerError(respond(text: "Can't fetch reviewer slack user.")) }
 
         guard let token = x.2
-          else { return conn |> internalServerError(respond(text: "Can't fetch token.")) }
+          else { return conn |> internalServerError(respond(text: "Can't fetch google auth token.")) }
 
         let updatedAbsence = absence
           |> \.requester .~ .right(requesterUser)
@@ -243,13 +234,13 @@ private func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     htmlLink: nil,
     created: nil,
     updated: nil,
-    summary: "\(absence.requester.right!.profile!.name) - \(absence.reason.rawValue)",
+    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue)",
     description: nil,
     start: startDateTime(from: absence.period),
     end: endDateTime(from: absence.period),
     attendees: [
-      .init(email: absence.requester.right!.profile!.email, displayName: absence.requester.right!.profile!.name),
-      .init(email: absence.reviewer!.profile!.email, displayName: absence.reviewer!.profile!.name)
+      .init(email: absence.requester.right!.profile.email, displayName: absence.requester.right!.profile.name),
+      .init(email: absence.reviewer!.profile.email, displayName: absence.reviewer!.profile.name)
     ]
   )
 }

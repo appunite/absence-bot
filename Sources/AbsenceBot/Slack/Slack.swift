@@ -28,7 +28,7 @@ public struct Slack {
     public typealias Id = Tagged<User, String>
     public private(set) var id: Id
     
-    public private(set) var profile: Profile?
+    public private(set) var profile: Profile
     public private(set) var tz: TimeZone
 
 
