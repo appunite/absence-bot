@@ -9,7 +9,9 @@ public struct Absence: Codable, Equatable {
   public var requester: Either<Slack.User.Id, Slack.User>
   public var period: Period
   public var reason: Reason
+  
   public var reviewer: Slack.User?
+  public var event: GoogleCalendar.Event?
   
   public struct Period: Codable, Equatable {
     public var startedAt: Date
@@ -122,6 +124,16 @@ private func endDateTime(from period: Absence.Period) -> GoogleCalendar.Event.Da
     date: period.isAllDay ? period.finishedAt : nil,
     dateTime: !period.isAllDay ? period.finishedAt : nil
   )
+}
+
+extension Absence {
+  public var announcementMessageText: String {
+    // get absence date range string
+    let period = self.period.dateRange(tz: Current.hqTimeZone())
+
+    // generate text
+    return "<@\(self.requesterId)> is asking for vacant \(period) because of the \(self.reason.rawValue)."
+  }
 }
 
 extension Absence.Reason {

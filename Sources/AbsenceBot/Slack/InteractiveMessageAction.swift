@@ -40,29 +40,6 @@ extension InteractiveMessageAction.User: Codable, Equatable {}
 extension InteractiveMessageAction.Channel: Codable, Equatable {}
 
 extension InteractiveMessageAction {
-  public func pendingFallback() -> InteractiveMessageFallback {
-    return .init(
-      text: self.originalMessage.text,
-      attachment: .pendingAttachement(reviewer: self.user.id)
-    )
-  }
-
-  public func rejectionFallback(requester: Slack.User.Id) -> InteractiveMessageFallback {
-    return .init(
-      text: self.originalMessage.text,
-      attachment: .rejectionAttachement(reviewer: self.user.id, requester: requester)
-    )
-  }
-
-  public func acceptanceFallback(requester: Slack.User.Id, eventLink: URL?) -> InteractiveMessageFallback {
-    return .init(
-      text: self.originalMessage.text,
-      attachment: .acceptanceAttachement(reviewer: self.user.id, requester: requester, eventLink: eventLink)
-    )
-  }
-}
-
-extension InteractiveMessageAction {
   public var absence: Absence? {
     return Data(base64Encoded: self.callbackId)
       .flatMap { try? JSONDecoder().decode(Absence.self, from: $0)}

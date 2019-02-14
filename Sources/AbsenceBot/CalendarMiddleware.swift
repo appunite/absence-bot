@@ -110,7 +110,7 @@ private func rejectionMiddleware(
         switch errorOrUser {
         case .right(.right):
           // send fallback message about action result
-          return conn.map(const(conn.data.rejectionFallback(requester: absence.requesterId)))
+          return conn.map(const(.rejectionFallback(absence: absence)))
             |> middleware
 
         case let .right(.left(e)):
@@ -126,7 +126,7 @@ private func rejectionMiddleware(
 }
 
 private func acceptanceComponentsMiddleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<Absence, GoogleCalendar.AccessToken, InteractiveMessageAction>, Data>
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<GoogleCalendar.AccessToken, Absence>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
   
   return { conn in
@@ -168,18 +168,18 @@ private func acceptanceComponentsMiddleware(
           |> \.requester .~ .right(requesterUser)
           |> \.reviewer .~ reviewerUser
 
-        return conn.map(const(updatedAbsence .*. token .*. conn.data))
+        return conn.map(const(token .*. updatedAbsence))
           |> middleware
       }
   }
 }
 
 private func acceptanceCalendarEventMiddleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Absence, GoogleCalendar.Event>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<Absence, GoogleCalendar.AccessToken, InteractiveMessageAction>, Data> {
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Absence, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<GoogleCalendar.AccessToken, Absence>, Data> {
   
   return { conn in
-    let (absence, token, action) = (get1(conn.data), get2(conn.data), rest(conn.data))
+    let (token, absence) = (get1(conn.data), rest(conn.data))
     let event = calendarEvent(from: absence)
 
     return Current.calendar.createEvent(token, event)
@@ -187,7 +187,10 @@ private func acceptanceCalendarEventMiddleware(
       .flatMap { errorOrEvent in
         switch errorOrEvent {
         case let .right(event):
-          return conn.map(const(action .*. absence .*. event))
+          let updatedAbsence = absence
+            |> \.event .~ event
+
+          return conn.map(const(updatedAbsence))
             |> middleware
           
         case let .left(e):
@@ -200,19 +203,17 @@ private func acceptanceCalendarEventMiddleware(
 
 private func acceptanceMessagesMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Absence, GoogleCalendar.Event>, Data> {
+  ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
   return { conn in
-    let (action, absence, event) = (get1(conn.data), get2(conn.data), rest(conn.data))
-
     return Current.slack
-      .postMessage(.acceptanceNotificationMessage(channel: absence.requesterId.rawValue, eventLink: event.htmlLink, reason: absence.reason))
+      .postMessage(.acceptanceNotificationMessage(channel: conn.data.requesterId.rawValue, eventLink: conn.data.event?.htmlLink, reason: conn.data.reason))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
         case .right(.right):
           // send fallback message about action result
-          return conn.map(const(action.acceptanceFallback(requester: absence.requesterId, eventLink: event.htmlLink)))
+          return conn.map(const(.acceptanceFallback(absence: conn.data)))
             |> middleware
           
         case let .right(.left(e)):

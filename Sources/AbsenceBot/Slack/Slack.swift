@@ -177,17 +177,25 @@ private let slackJsonDecoder = JSONDecoder()
 private let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
 
-extension Slack.Message {
-  public static func announcementMessage(absence: Absence) -> Slack.Message {
+extension Slack.Message.Attachment {
+  public static func acceptanceAttachement(reviewer: Slack.User.Id?, requester: Slack.User.Id, eventLink: URL?) -> Slack.Message.Attachment {
+    return .init(text: "Thank you, \(reviewer.map { "<@\($0)>" } ?? "@unknown"), for making this decision! I've already created the \(eventLink.map { "<\($0.absoluteString)|event>" } ?? "event") in absence calendar and I'll notify <@\(requester)> about this fact", fallback: nil, callbackId: nil, actions: nil)
+  }
+  
+  public static func rejectionAttachement(reviewer: Slack.User.Id?, requester: Slack.User.Id) -> Slack.Message.Attachment {
+    return .init(
+      text: "Thank you, \(reviewer.map { "<@\($0)>" } ?? "@unknown"), for making this decision! I'll notify <@\(requester)> about rejecting absence request", fallback: nil, callbackId: nil, actions: nil)
+  }
+  
+  public static func announcementAttachment(absence: Absence) -> Slack.Message.Attachment {
     let rawAbsence = absence
       |> \.requester .~ .left(absence.requesterId)
-
+    
     let payload = try! JSONEncoder()
       .encode(rawAbsence)
       .base64EncodedString()
-
-    // generate attachement
-    let attachment = Slack.Message.Attachment(
+    
+    return .init(
       text: "Let me know what you think about this.",
       fallback: "Absence acceptance interactive message",
       callbackId: payload,
@@ -195,15 +203,16 @@ extension Slack.Message {
         .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
         .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
     )
+  }
+}
 
-    // get absence date range string
-    let period = absence.period.dateRange(tz: Current.hqTimeZone())
-
-    // generate text // get2(conn.data)!.name
-    let text = "<@\(absence.requesterId)> is asking for vacant \(period) because of the \(absence.reason.rawValue)."
-    
+extension Slack.Message {
+  public static func announcementMessage(absence: Absence) -> Slack.Message {
     // generate message
-    return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])
+    return .init(
+      text: absence.announcementMessageText,
+      channel: Current.envVars.slack.channel,
+      attachments: [.announcementAttachment(absence: absence)])
   }
   
   public static func rejectionNotificationMessage(requester: Slack.User.Id) -> Slack.Message {

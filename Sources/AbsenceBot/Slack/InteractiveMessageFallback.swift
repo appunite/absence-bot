@@ -23,21 +23,20 @@ extension InteractiveMessageFallback {
   }
 }
 
-
 extension InteractiveMessageFallback: Codable {}
 
-extension Slack.Message.Attachment {
-  public static func acceptanceAttachement(reviewer: Slack.User.Id, requester: Slack.User.Id, eventLink: URL?) -> Slack.Message.Attachment {
-    return .init(text: "Thank you, <@\(reviewer)>, for making this decision! I've already created the \(eventLink.map { "<\($0.absoluteString)|event>" } ?? "event") in absence calendar and I'll notify <@\(requester)> about this fact", fallback: nil, callbackId: nil, actions: nil)
-  }
-  
-  public static func rejectionAttachement(reviewer: Slack.User.Id, requester: Slack.User.Id) -> Slack.Message.Attachment {
+extension InteractiveMessageFallback {
+  public static func rejectionFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
-      text: "Thank you, <@\(reviewer)>, for making this decision! I'll notify <@\(requester)> about rejecting absence request", fallback: nil, callbackId: nil, actions: nil)
+      text: absence.announcementMessageText,
+      attachment: .rejectionAttachement(reviewer: absence.reviewer?.id, requester: absence.requesterId)
+    )
   }
-  
-  public static func pendingAttachement(reviewer: Slack.User.Id) -> Slack.Message.Attachment {
+
+  public static func acceptanceFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
-      text: "Thank you, <@\(reviewer)>. Give me a second, I need to process this.", fallback: nil, callbackId: nil, actions: nil)
+      text: absence.announcementMessageText,
+      attachment: .acceptanceAttachement(reviewer: absence.reviewer?.id, requester: absence.requesterId, eventLink: absence.event?.htmlLink)
+    )
   }
 }

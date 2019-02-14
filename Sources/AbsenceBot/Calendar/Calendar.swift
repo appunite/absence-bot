@@ -44,7 +44,7 @@ public struct GoogleCalendar {
   }
 
   // docs: https://developers.google.com/calendar/v3/reference/events/insert
-  public struct Event: Codable {
+  public struct Event: Codable, Equatable {
     public private(set) var id: String?
     public private(set) var colorId: String?
     public private(set) var htmlLink: URL?
@@ -56,12 +56,12 @@ public struct GoogleCalendar {
     public private(set) var end: DateTime
     public private(set) var attendees: [Actor]
 
-    public struct Actor: Codable {
+    public struct Actor: Codable, Equatable {
       public var email: String
       public var displayName: String?
     }
 
-    public struct DateTime {
+    public struct DateTime: Equatable {
       public var date: Date?
       public var dateTime: Date?
       
