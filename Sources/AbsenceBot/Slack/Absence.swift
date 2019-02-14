@@ -99,7 +99,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     htmlLink: nil,
     created: nil,
     updated: nil,
-    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue)",
+    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue) \(absence.reason.emoji)",
     description: nil,
     start: startDateTime(from: absence.period),
     end: endDateTime(from: absence.period),
@@ -139,4 +139,20 @@ extension Absence.Reason {
       return "5"
     }
   }
+
+  public var emoji: String {
+    switch self {
+    case .illness:
+      return ["🤧","🤒", "😷"].randomElement()!
+    case .holiday:
+      return ["🏄‍♂️", "☀", "🍹"].randomElement()!
+    case .remote:
+      return ["👻", "👨‍💻"].randomElement()!
+    case .conference:
+      return ["👨‍🔬"].randomElement()!
+    case .school:
+      return ["🎓"].randomElement()!
+    }
+  }
+
 }
