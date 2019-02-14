@@ -199,8 +199,32 @@ extension Slack.Message {
     return Slack.Message(text: text, channel: Current.envVars.slack.channel, attachments: [attachment])
   }
   
-  static func rejectionNotificationMessage(requester: String) -> Slack.Message {
+  public static func rejectionNotificationMessage(requester: String) -> Slack.Message {
     return Slack.Message(text: "Bad news! Your absence request was rejected", channel: requester, attachments: [])
   }
+  
+  public static func acceptanceNotificationMessage(channel: String, eventLink: URL?, reason: Absence.Reason) -> Slack.Message {
+    // generate attachement
+    let attachment = Slack.Message.Attachment(text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n \(imgeCompanyAddress.split(separator: "\n").map { ">" + $0 }.joined(separator: "\n"))", fallback: nil, callbackId: nil, actions: nil)
 
+    // generate message
+    let message = {
+      Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(eventLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: channel, attachments: $0)
+    }
+
+    switch reason {
+    case .illness:
+      return message([attachment])
+    default:
+      return message([])
+    }
+  }
 }
+
+private let imgeCompanyAddress = """
+IMGE sp. z o.o.
+ul. Droga Dębińska 3a/3
+61-555 Poznań
+NIP 783-172-43-36
+"""
+

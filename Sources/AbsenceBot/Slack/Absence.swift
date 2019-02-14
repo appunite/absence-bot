@@ -3,13 +3,13 @@ import Prelude
 import Optics
 
 public struct Absence: Codable, Equatable {
-  public private(set) var user: Slack.User
-  public private(set) var period: Period
-  public private(set) var reason: Reason
+  public var user: Slack.User
+  public var period: Period
+  public var reason: Reason
 
   public struct Period: Codable, Equatable {
-    public private(set) var startedAt: Date
-    public private(set) var finishedAt: Date
+    public var startedAt: Date
+    public var finishedAt: Date
   }
 
   public enum Reason: String, Codable, RawRepresentable, Equatable {

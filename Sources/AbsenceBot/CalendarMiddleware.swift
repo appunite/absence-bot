@@ -7,9 +7,12 @@ import Prelude
 import Tuple
 
 let calendarMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
-//  pendingMiddleware
-  rejectionMiddleware
-//    >>> validateSlackSignature(signature: Current.envVars.slack.signature)
+//  rejectionMiddleware
+  
+  validateSlackSignature(signature: Current.envVars.slack.signature)
+    <<< acceptanceComponentsMiddleware
+    <<< acceptanceCalendarEventMiddleware
+    <<< acceptanceMessagesMiddleware
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
 
 public func validateSlackSignature<A>(
@@ -28,55 +31,6 @@ public func validateSlackSignature<A>(
     }
 }
 
-private func pendingMiddleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
-  
-  return { conn in
-    guard let value = conn.data.actions.first?.value else {
-      return conn
-        |> internalServerError(respond(text: "WTF"))
-    }
-
-    switch value {
-    case .accept:
-      print("accept")
-    case .reject:
-      print("reject")
-    }
-
-    //
-    parallel(slack(conn.data.user.id).run)
-      .run { x in print(x.right) }
-
-    //
-    return conn.map(const(conn.data.pendingFallback()))
-      |> middleware
-  }
-}
-
-private func slack(_ id: String)
-  -> EitherIO<Error, Slack.User> {
-    return Current.slack.fetchUser(id)
-      .flatMap { errorOrUser in
-        
-        switch errorOrUser {
-        case let .right(payload):
-          return EitherIO.init(
-            run: .init { callback in callback(.right(payload.user)) }
-          )
-
-        case let .left(e):
-          return EitherIO.init(
-            run: .init { callback in callback(.left(NSError.init(domain: "error", code: 0))) } //e.error
-          )
-//          return EitherIO.init(
-//            run: .init { callback in callback(.left(e)) }
-//          )
-        }
-    }
-}
-
 public func requireSome<A>(_ e: Either<Error, A?>) -> Either<Error, A> {
   switch e {
   case let .left(e):
@@ -84,86 +38,6 @@ public func requireSome<A>(_ e: Either<Error, A?>) -> Either<Error, A> {
   case let .right(a):
     return a.map(Either.right) ?? .left(unit)
   }
-}
-
-private func eventGoogleMiddleware(absence: Absence)
-  -> EitherIO<Error, GoogleCalendar.Event> {
-    
-    let event = GoogleCalendar.Event(
-      id: nil,
-      colorId: 1,
-      htmlLink: nil,
-      created: nil,
-      updated: nil,
-      summary: "T##String?",
-      description: "T##String?",
-      attendees: [.init(email: "emil@appunite.com", displayName: "Emil Wojtaszek")],
-      start: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil),
-      end: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil))
-    
-    
-//    return Current.calendar.fetchAuthToken()
-//      .flatMap { errorOrToken in
-//        switch errorOrToken {
-//        case let .right(token):
-//          return Current.calendar.createEvent(token, event)
-//            .run
-//            .flatMap { event in
-//              let t = lift(Either<Error, GoogleCalendar.Event>.right(event))
-//
-//              fatalError()
-//          }
-//        case let .left(e):
-//          return EitherIO.init(
-//            run: .init { callback in callback(.left(e.error)) }
-//          )
-//        }
-//      }
-
-//        x
-//      .flatMap
-//    return Current.calendar.createEvent(conn.data, event)
-//      .run
-//      .flatMap { errorOrMessage in
-//        switch errorOrMessage {
-//        case let .right(payload):
-//          return conn
-//            |> writeStatus(.ok)
-//            >=> respond(text: "\(payload.summary)")
-//
-//        case let .left(e):
-//          return conn
-//            |> writeStatus(.internalServerError)
-//            >=> respond(text: e.localizedDescription)
-//        }
-//    }
-    
-    fatalError()
-}
-
-private func googleAccessToken()
-  -> EitherIO<Error, Either<GoogleCalendar.OAuthError, GoogleCalendar.AccessToken>> {
-fatalError()
-//    return Current.calendar.fetchAuthToken()
-//      .run
-//      .flatMap { errorOrToken in
-//        switch errorOrToken {
-//        case let .right(.right(payload)):
-//          return EitherIO.init(
-//            run: .init { callback in callback(.right(payload)) }
-//          )
-//
-//        case let .right(.left(e)):
-//          return EitherIO.init(
-//            run: .init { callback in callback(.left(NSError.init(domain: "error", code: 0))) } //e.error
-//          )
-//
-//        case let .left(e):
-//          return EitherIO.init(
-//            run: .init { callback in callback(.left(NSError.init(domain: "error", code: 0))) } //e.error
-//          )
-//        }
-//    }
 }
 
 private func googleAccessTokenMiddleware<A>(
@@ -216,42 +90,6 @@ private func slackUserMiddleware<A>(
   }
 }
 
-private func createCalendarEventMiddleware<A>(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.Event, A>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, GoogleCalendar.AccessToken, A>, Data> {
-  
-  return { conn in
-    
-    let (action, token) = (get1(conn.data), get2(conn.data))
-
-    let event = GoogleCalendar.Event(
-      id: nil,
-      colorId: 1,
-      htmlLink: nil,
-      created: nil,
-      updated: nil,
-      summary: "T##String?",
-      description: "T##String?",
-      attendees: [.init(email: "emil@appunite.com", displayName: "Emil Wojtaszek")],
-      start: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil),
-      end: GoogleCalendar.Event.DateTime.init(date: Date(), dateTime: nil))
-
-    return Current.calendar.createEvent(token, event)
-      .run
-      .flatMap { errorOrEvent in
-        switch errorOrEvent {
-        case let .right(event):
-          return conn.map(const(action .*. event .*. rest(conn.data)))
-            |> middleware
-
-        case let .left(e):
-          return conn
-            |> internalServerError(respond(text: e.localizedDescription))
-        }
-    }
-  }
-}
-
 private func rejectionMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
@@ -281,4 +119,146 @@ private func rejectionMiddleware(
         }
     }
   }
+}
+
+private func acceptanceComponentsMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<Absence, GoogleCalendar.AccessToken, InteractiveMessageAction>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
+  
+  return { conn in
+    guard let absence = conn.data.absence else {
+      return conn |> internalServerError(respond(text: "Can't decode absence payload data."))
+    }
+
+    // fetch requester user
+    let requesterUser = Current.slack.fetchUser(absence.user.id)
+      .run
+      .parallel
+      .map { $0.right?.right?.user }
+
+    // fetch requester user
+    let reviewerUser = Current.slack.fetchUser(conn.data.user.id)
+      .run
+      .parallel
+      .map { $0.right?.right?.user }
+
+    // fetch token
+    let token = Current.calendar.fetchAuthToken()
+      .run
+      .parallel
+      .map { $0.right?.right }
+
+    return zip3(requesterUser, reviewerUser, token)
+      .sequential
+      .flatMap { x in
+        
+//        zip(with: {
+//          let updatedAbsence = absence
+//            |> \.user .~ $0
+//
+//          return conn.map(const(updatedAbsence .*. $2 .*. conn.data))
+//            |> middleware
+//        })(c.0, c.1, c.2)
+//
+//        guard let x = zip(c.0, zip(c.1, c.2)).map ({ ($0.0, $0.1.0, $0.1.1)}) else {
+//          fatalError()
+//        }
+        
+        guard let requesterUser = x.0
+          else { return conn |> internalServerError(respond(text: "Can't fetch user.")) }
+
+        guard let reviewerUser = x.1
+          else { return conn |> internalServerError(respond(text: "Can't fetch user.")) }
+
+        guard let token = x.2
+          else { return conn |> internalServerError(respond(text: "Can't fetch token.")) }
+
+        let updatedAbsence = absence
+          |> \.user .~ requesterUser
+
+        return conn.map(const(updatedAbsence .*. token .*. conn.data))
+          |> middleware
+      }
+  }
+}
+
+private func acceptanceCalendarEventMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Absence, GoogleCalendar.Event>, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<Absence, GoogleCalendar.AccessToken, InteractiveMessageAction>, Data> {
+  
+  return { conn in
+    let (absence, token, action) = (get1(conn.data), get2(conn.data), rest(conn.data))
+    let event = calendarEvent(from: absence)
+
+    return Current.calendar.createEvent(token, event)
+      .run
+      .flatMap { errorOrEvent in
+        switch errorOrEvent {
+        case let .right(event):
+          return conn.map(const(action .*. absence .*. event))
+            |> middleware
+          
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
+}
+
+private func acceptanceMessagesMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T3<InteractiveMessageAction, Absence, GoogleCalendar.Event>, Data> {
+  
+  return { conn in
+    let (action, absence, event) = (get1(conn.data), get2(conn.data), rest(conn.data))
+
+    return Current.slack
+      .postMessage(.acceptanceNotificationMessage(channel: absence.user.id, eventLink: event.htmlLink, reason: absence.reason))
+      .run
+      .flatMap { errorOrUser in
+        switch errorOrUser {
+        case .right(.right):
+          // send fallback message about action result
+          return conn.map(const(action.acceptanceFallback(requester: absence.user.id, eventLink: event.htmlLink)))
+            |> middleware
+          
+        case let .right(.left(e)):
+          return conn
+            |> internalServerError(respond(text: e.error))
+          
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        }
+    }
+  }
+}
+
+private func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
+  return GoogleCalendar.Event(
+    id: nil,
+    colorId: "2",
+    htmlLink: nil,
+    created: nil,
+    updated: nil,
+    summary: "\(absence.user.profile.name) - \(absence.reason.rawValue)",
+    description: "nil",
+    attendees: [.init(email: absence.user.profile.email, displayName: absence.user.profile.name)],
+    start: startDateTime(from: absence.period),
+    end: endDateTime(from: absence.period))
+}
+
+private func startDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
+  if period.isAllDay {
+    return .init(date: period.startedAt, dateTime: nil)
+  }
+  return .init(date: nil, dateTime: period.startedAt)
+}
+
+private func endDateTime(from period: Absence.Period) -> GoogleCalendar.Event.DateTime {
+  if period.isAllDay {
+    return .init(date: period.finishedAt, dateTime: nil)
+  }
+  return .init(date: nil, dateTime: period.finishedAt)
 }

@@ -54,7 +54,7 @@ extension InteractiveMessageAction {
     )
   }
 
-  public func acceptanceFallback(requester: String, eventLink: String) -> InteractiveMessageFallback {
+  public func acceptanceFallback(requester: String, eventLink: URL?) -> InteractiveMessageFallback {
     return .init(
       text: self.originalMessage.text,
       attachment: .acceptanceAttachement(reviewer: self.user.id, requester: requester, eventLink: eventLink)

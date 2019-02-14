@@ -46,7 +46,7 @@ public struct GoogleCalendar {
   // docs: https://developers.google.com/calendar/v3/reference/events/insert
   public struct Event: Codable {
     public private(set) var id: String?
-    public private(set) var colorId: Int?
+    public private(set) var colorId: String?
     public private(set) var htmlLink: URL?
     public private(set) var created: Date?
     public private(set) var updated: Date?
@@ -61,20 +61,28 @@ public struct GoogleCalendar {
       public var displayName: String
     }
 
-    public struct DateTime: Codable {
+    public struct DateTime {
       public var date: Date?
       public var dateTime: Date?
+      
+      public enum CodingKeys: String, CodingKey {
+        case date
+        case dateTime
+      }
     }
   }
 }
 
 func fetchAuthToken() -> DecodableRequest<Either<GoogleCalendar.OAuthError, GoogleCalendar.AccessToken>> {
   var jwt = defaultOAuthPayload(Current.date())
-  let jwtString = try! jwt.sign(using: rs256Signer!)
+  let jwtString = Current.envVars.google.privteKey
+    .data(using: .utf8)
+    .map(JWTSigner.rs256(privateKey:))
+    .flatMap({ try! jwt.sign(using: $0) })
 
   let bodyParts = [
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-    "assertion": jwtString
+    "assertion": jwtString!
   ]
 
   return DecodableRequest(
@@ -88,7 +96,7 @@ func fetchAuthToken() -> DecodableRequest<Either<GoogleCalendar.OAuthError, Goog
 }
 
 func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.Event) -> DecodableRequest<GoogleCalendar.Event> {
-  let body = try? calendarJsonEncoder
+  let body = try? dialogflowJsonEncoder
     .encode(event)
   
   return DecodableRequest(
@@ -127,11 +135,37 @@ private let defaultOAuthPayload: (Date) -> JWT<OAuthPayload> = { date in
   return JWT<OAuthPayload>.init(claims: payload)
 }
 
-private let rs256Signer = Current.envVars.google.privteKey
-  .data(using: .utf8)
-  .map(JWTSigner.rs256(privateKey:))
+extension GoogleCalendar.Event.DateTime: Codable {
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let _date = try container.decodeIfPresent(String.self, forKey: CodingKeys.date)
+    let _dateTime = try container.decodeIfPresent(String.self, forKey: .dateTime)
+    self.date = _date.flatMap { dateFormatter.date(from: $0) }
+    self.dateTime = _dateTime.flatMap { dateTimeFormatter.date(from: $0) }
+  }
+  
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder
+      .container(keyedBy: CodingKeys.self)
+    let _date = self.date.map { dateFormatter.string(from: $0) }
+    let _dateTime = self.dateTime.map { dateFormatter.string(from: $0) }
+    try container.encodeIfPresent(_date, forKey: .date)
+    try container.encode(_dateTime, forKey: .dateTime)
+  }
+}
+
+private let dateFormatter = DateFormatter()
+  |> \.locale .~ Locale(identifier: "en_US_POSIX")
+  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.calendar .~ Calendar(identifier: .iso8601)
+  |> \.dateFormat .~ "yyyy-MM-dd"
+
+private let dateTimeFormatter = DateFormatter()
+  |> \.locale .~ Locale(identifier: "en_US_POSIX")
+  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.calendar .~ Calendar(identifier: .iso8601)
+  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
 private let calendarJsonDecoder = JSONDecoder()
-  |> \.dateDecodingStrategy .~ .secondsSince1970
-private let calendarJsonEncoder = JSONEncoder()
-  |> \.dateEncodingStrategy .~ .secondsSince1970
+  |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatter)
+

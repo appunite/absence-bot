@@ -65,8 +65,16 @@ public func zip<A, B>(_ a: A?, _ b: B?) -> (A, B)? {
   return (a, b)
 }
 
+public func zip<A, B, C>(_ a: A?, _ b: B?, _ c: C?) -> (A, B, C)? {
+  return zip(a, zip(b, c)).map ({ ($0.0, $0.1.0, $0.1.1)})
+}
+
 public func zip<A, B, C>(with transform: @escaping (A, B) -> C) -> (A?, B?) -> C? {
   return { zip($0, $1).map(transform) }
+}
+
+public func zip<A, B, C, D>(with transform: @escaping (A, B, C) -> D) -> (A?, B?, C?) -> D? {
+  return { zip($0, $1, $2).map(transform) }
 }
 
 public func zip2<A, B>(_ lhs: Parallel<A>, _ rhs: Parallel<B>) -> Parallel<(A, B)> {
