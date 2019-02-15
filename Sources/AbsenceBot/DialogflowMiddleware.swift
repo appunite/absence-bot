@@ -91,13 +91,13 @@ private func fulfillmentMiddleware(
         )
         
         return middleware
-          <| conn.map(const(fulfillment .*. .init(requester: .right(user), period: period, reason: reason, reviewer: nil, event: nil)))
+          <| conn.map(const(fulfillment .*. .pending(requester: user, period: period, reason: reason)))
       }
       
       // we have all date, let's ask user if everytking is ok
       let fulfillment = Fulfillment
         .confirmation(
-          absence: .init(requester: .right(user), period: period, reason: reason, reviewer: nil, event: nil),
+          absence: .pending(requester: user, period: period, reason: reason),
           context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
       
       return middleware

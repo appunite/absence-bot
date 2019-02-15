@@ -9,6 +9,7 @@ import Cryptor
 
 let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
   validateSlackSignature(signature: Current.envVars.slack.secret)
+    <<< decodeAbsenceMiddleware
     <<< filter(
       ^\.isAccepted,
       or: sendRejectionMessagesMiddleware
@@ -17,6 +18,24 @@ let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, Response
     <<< createCalendarEventMiddleware
     <<< sendAcceptanceMessagesMiddleware
     <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
+
+private func decodeAbsenceMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Absence, Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
+  return { conn in
+    guard let absence = conn.data.absence else {
+      return conn
+        |> internalServerError(respond(text: "Can't decode absence payload data."))
+    }
+
+    let updatedAbsence = absence
+      |> \.status .~ (conn.data.isAccepted ? .approved : .rejected)
+      |> \.reviewer .~ .left(conn.data.user.id)
+    
+    return conn.map(const(updatedAbsence))
+      |> middleware
+  }
+}
 
 public func validateSlackSignature<A>(
   signature: String,
@@ -48,21 +67,15 @@ public func validateSlackSignature<A>(
 
 private func sendRejectionMessagesMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
+  ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
   return { conn in
-    guard let absence = conn.data.absence else {
-      return conn
-        |> internalServerError(respond(text: "Can't decode absence payload data."))
-    }
-
-    return Current.slack.postMessage(.rejectionNotificationMessage(absence: absence))
+    return Current.slack.postMessage(.rejectionNotificationMessage(absence: conn.data))
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
         case .right(.right):
-          // send fallback message about action result
-          return conn.map(const(.rejectionFallback(absence: absence)))
+          return conn.map(const(.rejectionFallback(absence: conn.data)))
             |> middleware
 
         case let .right(.left(e)):
@@ -79,21 +92,17 @@ private func sendRejectionMessagesMiddleware(
 
 private func fetchAcceptanceComponentsMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<GoogleCalendar.AccessToken, Absence>, Data>
-  ) -> Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> {
+  ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
   return { conn in
-    guard let absence = conn.data.absence else {
-      return conn |> internalServerError(respond(text: "Can't decode absence payload data."))
-    }
-
     // fetch requester user
-    let requesterUser = Current.slack.fetchUser(absence.requesterId)
+    let requesterUser = Current.slack.fetchUser(conn.data.requesterId)
       .run
       .parallel
       .map { $0.right?.right?.user }
 
     // fetch requester user
-    let reviewerUser = Current.slack.fetchUser(conn.data.user.id)
+    let reviewerUser = Current.slack.fetchUser(conn.data.reviewerId!)
       .run
       .parallel
       .map { $0.right?.right?.user }
@@ -106,19 +115,19 @@ private func fetchAcceptanceComponentsMiddleware(
 
     return zip3(requesterUser, reviewerUser, token)
       .sequential
-      .flatMap { x in
-        guard let requesterUser = x.0
+      .flatMap { result in
+        guard let requesterUser = result.0
           else { return conn |> internalServerError(respond(text: "Can't fetch requester slack user.")) }
 
-        guard let reviewerUser = x.1
+        guard let reviewerUser = result.1
           else { return conn |> internalServerError(respond(text: "Can't fetch reviewer slack user.")) }
 
-        guard let token = x.2
+        guard let token = result.2
           else { return conn |> internalServerError(respond(text: "Can't fetch google auth token.")) }
 
-        let updatedAbsence = absence
+        let updatedAbsence = conn.data
           |> \.requester .~ .right(requesterUser)
-          |> \.reviewer .~ reviewerUser
+          |> \.reviewer .~ .right(reviewerUser)
 
         return conn.map(const(token .*. updatedAbsence))
           |> middleware

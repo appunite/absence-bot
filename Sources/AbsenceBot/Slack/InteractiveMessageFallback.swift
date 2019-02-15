@@ -29,14 +29,14 @@ extension InteractiveMessageFallback {
   public static func rejectionFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
       text: absence.announcementMessageText,
-      attachment: .rejectionAttachement(reviewer: absence.reviewer?.id, requester: absence.requesterId)
+      attachment: .rejectionAttachement(reviewer: absence.reviewerId, requester: absence.requesterId)
     )
   }
 
   public static func acceptanceFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
       text: absence.announcementMessageText,
-      attachment: .acceptanceAttachement(reviewer: absence.reviewer?.id, requester: absence.requesterId, eventLink: absence.event?.htmlLink)
+      attachment: .acceptanceAttachement(reviewer: absence.reviewerId, requester: absence.requesterId, eventLink: absence.event?.htmlLink)
     )
   }
 }

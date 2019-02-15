@@ -10,9 +10,16 @@ public struct Absence: Codable, Equatable {
   public var period: Period
   public var reason: Reason
   
-  public var reviewer: Slack.User?
+  public var status: Status
+  public var reviewer: Either<Slack.User.Id, Slack.User>?
   public var event: GoogleCalendar.Event?
-  
+
+  public enum Status: Int, Codable, Equatable {
+    case pending
+    case approved
+    case rejected
+  }
+
   public struct Period: Codable, Equatable {
     public var startedAt: Date
     public var finishedAt: Date
@@ -28,12 +35,45 @@ public struct Absence: Codable, Equatable {
 }
 
 extension Absence {
+  public static func pending(requester: Slack.User, period: Absence.Period, reason: Absence.Reason) -> Absence {
+    return .init(requester: .right(requester), period: period, reason: reason, status: .pending, reviewer: nil, event: nil)
+  }
+}
+
+extension Absence {
+  public var isAccepted: Bool {
+    if case .approved = status {
+      return true
+    }
+    return false
+  }
+  
+  public var isRejected: Bool {
+    if case .rejected = status {
+      return true
+    }
+    return false
+  }
+}
+
+extension Absence {
   public var requesterId: Slack.User.Id {
     switch requester {
     case .left(let id):
       return id
     case .right(let user):
       return user.id
+    }
+  }
+
+  public var reviewerId: Slack.User.Id? {
+    switch reviewer {
+    case .some(.left(let id)):
+      return id
+    case .some(.right(let user)):
+      return user.id
+    default:
+      return nil
     }
   }
 }
@@ -107,7 +147,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     end: endDateTime(from: absence.period),
     attendees: [
       .init(email: absence.requester.right!.profile.email, displayName: absence.requester.right!.profile.name),
-      .init(email: absence.reviewer!.profile.email, displayName: absence.reviewer!.profile.name)
+      .init(email: absence.reviewer!.right!.profile.email, displayName: absence.reviewer!.right!.profile.name)
     ]
   )
 }
