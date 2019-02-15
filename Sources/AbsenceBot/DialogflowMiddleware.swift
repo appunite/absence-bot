@@ -13,7 +13,7 @@ let dialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded, Webhook, Dat
     >>> basicAuth(
       user: Current.envVars.basicAuth.username,
       password: Current.envVars.basicAuth.password)
-    <| writeStatus(.ok) >=> respond(encoder: JSONEncoder())
+    <| respond()
 
 private func messageMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>

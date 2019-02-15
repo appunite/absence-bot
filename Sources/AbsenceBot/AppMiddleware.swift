@@ -83,6 +83,20 @@ public func respond<A>(data: Data, contentType: MediaType)
 
 public func respond<A: Encodable>(encoder: JSONEncoder) -> Middleware<HeadersOpen, ResponseEnded, A, Data> {
   return { conn in
-    conn |> respond(json: try! JSONEncoder().encode(conn.data))
+    conn |> respond(json: try! encoder.encode(conn.data))
+  }
+}
+
+public func respond<A: Encodable>(_ status: Status = .ok, encoder: JSONEncoder = JSONEncoder()) -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+  return { conn in
+    do {
+      return conn |>
+        writeStatus(.ok)
+        >=> respond(json: try encoder.encode(conn.data))
+    } catch {
+      return conn |>
+        writeStatus(.internalServerError)
+        >=> respond(text: "Can't encode JSON response. Error: \(error.localizedDescription)")
+    }
   }
 }
