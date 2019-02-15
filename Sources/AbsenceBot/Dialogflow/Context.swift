@@ -37,9 +37,7 @@ public struct Context: Codable, Equatable {
     public private(set) var dateTimeEnd: Date?
     // @sys.date
     public private(set) var dates: [Date]?
-    
-    public init() {}
-    
+
     public struct Period: Codable, Equatable {
       public private(set) var startDate: Date
       public private(set) var endDate: Date

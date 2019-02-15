@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Webhook: Codable, Equatable {
+public struct Webhook: Equatable {
   public private(set) var session: URL
   public private(set) var user: Slack.User.Id?
   public private(set) var action: Action
@@ -38,7 +38,9 @@ public struct Webhook: Codable, Equatable {
     case action
     case outputContexts
   }
+}
 
+extension Webhook: Codable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CustomCodingKeys.self)
 

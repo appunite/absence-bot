@@ -64,17 +64,28 @@ public struct GoogleCalendar {
     public struct DateTime: Equatable {
       public var date: Date?
       public var dateTime: Date?
-      
+
       public enum CodingKeys: String, CodingKey {
         case date
         case dateTime
       }
     }
   }
+
+  public struct OAuthPayload {
+    public private(set) var iss: String
+    public private(set) var scope: String
+    public private(set) var aud: String
+    public private(set) var iat: Date?
+    public private(set) var exp: Date?
+  }
 }
 
 func fetchAuthToken() -> DecodableRequest<Either<GoogleCalendar.OAuthError, GoogleCalendar.AccessToken>> {
-  var jwt = defaultOAuthPayload(Current.date())
+  var jwt = JWT<GoogleCalendar.OAuthPayload>(
+    claims: .standard(Current.date())
+  )
+
   let jwtString = Current.envVars.google.privteKey
     .data(using: .utf8)
     .map(JWTSigner.rs256(privateKey:))
@@ -114,25 +125,16 @@ private func runCalendar<A>(_ gitHubRequest: DecodableRequest<A>) -> EitherIO<Er
   return jsonDataTask(with: gitHubRequest.rawValue, decoder: calendarJsonDecoder)
 }
 
-public struct OAuthPayload {
-  public private(set) var iss: String
-  public private(set) var scope: String
-  public private(set) var aud: String
-  public private(set) var iat: Date?
-  public private(set) var exp: Date?
-}
-
-extension OAuthPayload: Claims {}
-
-private let defaultOAuthPayload: (Date) -> JWT<OAuthPayload> = { date in
-  let payload =  OAuthPayload(iss: Current.envVars.google.clientEmail,
-                      scope: "https://www.googleapis.com/auth/calendar.events",
-                      aud: "https://www.googleapis.com/oauth2/v4/token",
-                      iat: date,
-                      exp: date.addingTimeInterval(3600)
-  )
-
-  return JWT<OAuthPayload>.init(claims: payload)
+extension GoogleCalendar.OAuthPayload: Claims {
+  public static func standard(_ date: Date) -> GoogleCalendar.OAuthPayload {
+    return .init(
+      iss: Current.envVars.google.clientEmail,
+      scope: "https://www.googleapis.com/auth/calendar.events",
+      aud: "https://www.googleapis.com/oauth2/v4/token",
+      iat: date,
+      exp: date.addingTimeInterval(3600)
+    )
+  }
 }
 
 extension GoogleCalendar.Event.DateTime: Codable {
