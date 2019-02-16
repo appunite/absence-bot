@@ -3,6 +3,7 @@ import Foundation
 import Optics
 import Prelude
 import UrlFormEncoding
+import Cryptor
 
 // PreludeFoundation
 
@@ -85,6 +86,14 @@ public func zip3<A, B, C>(_ a: Parallel<A>, _ b: Parallel<B>, _ c: Parallel<C>) 
   return tuple3 <¢> a <*> b <*> c
 }
 
+public func zurry<A>(_ f: () -> A) -> A {
+  return f()
+}
+
+public func unzurry<A>(_ a: A) -> () -> A {
+  return { a }
+}
+
 // Calendar
 
 extension Calendar {
@@ -161,12 +170,6 @@ extension Date {
     
     // return new date
     return calendar.date(from: dateComponentsB)
-  }
-}
-
-extension Data {
-  public func hexEncodedString() -> String {
-    return map { String(format: "%02hhx", $0) }.joined()
   }
 }
 

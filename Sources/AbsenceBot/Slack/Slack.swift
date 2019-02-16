@@ -3,6 +3,7 @@ import Foundation
 import Optics
 import Prelude
 import UrlFormEncoding
+import HttpPipeline
 
 public struct Slack {
   /// Fetches a Slack user profile by id.
@@ -255,3 +256,8 @@ ul. Droga Dębińska 3a/3
 NIP 783-172-43-36
 """
 
+public func slackComputedDigest(key: String, body: Data?, timestamp: String) -> String? {
+  let value = "v0:\(timestamp):\(body.flatMap { String(data: $0, encoding: .utf8) } ?? "")"
+  return hexDigest(value: value, asciiSecret: key)
+    .flatMap {"v0=\($0)"}
+}

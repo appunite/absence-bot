@@ -1,0 +1,16 @@
+POST http://localhost:8080/dialogflow
+Authorization: Basic aGVsbG86d29ybGQ=
+
+{"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991","queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"reason":"illness"},"lifespanCount":5}]},"originalDetectIntentRequest":{"payload":{"data":{"event":{"user":"U456V5Q4E"}}}}}
+
+200 OK
+Content-Length: 63
+Content-Type: application/json
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 1; mode=block
+
+{"fulfillmentText":"*When* are you planning to take time off?"}

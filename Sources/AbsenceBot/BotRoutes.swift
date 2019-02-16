@@ -20,13 +20,13 @@ private let routers: [Router<Route>] = [
   .slack
     <¢> post %> lit("slack")
       %> formField("payload", PartialIso.data
-        >>> PartialIso.codableToJsonData(InteractiveMessageAction.self, decoder: .init()).inverted)
+        >>> PartialIso.codableToJsonData(InteractiveMessageAction.self, encoder: .init(), decoder: .init()).inverted)
       <% end,
 
   // Matches: POST /dialogflow
   .dialogflow
     <¢> post %> lit("dialogflow")
-      %> jsonBody(Webhook.self, decoder: dialogflowJsonDecoder)
+      %> jsonBody(Webhook.self, encoder: dialogflowJsonEncoder, decoder: dialogflowJsonDecoder)
       <% end,
 ]
 

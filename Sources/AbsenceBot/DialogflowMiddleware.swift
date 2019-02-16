@@ -13,7 +13,7 @@ let dialogflowMiddleware: Middleware<StatusLineOpen, ResponseEnded, Webhook, Dat
     >>> basicAuth(
       user: Current.envVars.basicAuth.username,
       password: Current.envVars.basicAuth.password)
-    <| respond()
+    <| respond(.ok, encoder: dialogflowJsonEncoder)
 
 private func messageMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Fulfillment, Data>
@@ -78,10 +78,10 @@ private func fulfillmentMiddleware(
         else { return conn |> unprocessableEntityError(respond(text: "Missing followup context.")) }
       
       guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
-        else { return middleware <| conn.map(const(Fulfillment.missingReason .*. nil)) }
+        else { return middleware <| conn.map(const(.missingReason .*. nil)) }
       
       guard let period = period(parameters: followupContext.parameters, tz: user.tz)
-        else { return middleware <| conn.map(const(Fulfillment.missingPeriod .*. nil)) }
+        else { return middleware <| conn.map(const(.missingPeriod .*. nil)) }
       
       if case .accept = payload.action {
         // we're done, send thanks comment and clear out contextes
@@ -111,7 +111,7 @@ private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Per
   if let date = parameters.date {
     // if there is no information about time, just treat this as full day
     guard let timeStart = parameters.timeStart, let timeEnd = parameters.timeEnd
-      else { return Absence.Period(dates: (date, date), tz: tz) }
+      else { return .init(dates: (date, date), tz: tz) }
     
     // extend day with time information
     return zip(with: { Absence.Period(dates: ($0, $1), tz: tz) })(

@@ -1,0 +1,17 @@
+POST http://localhost:8080/slack
+X-Slack-Request-Timestamp: 1546344000
+X-Slack-Signature: v0=37af35063a294fb68cbe7cf0935720297fb4f355eb13404d4d9231a464f6665d
+
+payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsInJlYXNvbiI6ImhvbGlkYXkiLCJyZXF1ZXN0ZXIiOiJKQUtLT1ciLCJwZXJpb2QiOnsic3RhcnRlZEF0Ijo1NjgwMzY4MDAsImZpbmlzaGVkQXQiOjU2ODEyMzIwMH19%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22accept%22,%22type%22:%22button%22,%22value%22:%22accept%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
+
+200 OK
+Content-Length: 472
+Content-Type: application/json
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 1; mode=block
+
+{"attachments":[{"text":"Thank you, <@U456V5Q4E>, for making this decision! I've already created the <https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc|event> in absence calendar and I'll notify <@U456V5Q4E> about this fact"}],"replace_original":true,"response_type":"ephemeral","text":"<@U456V5Q4E> is asking for vacant *January 1, 2019* - *January 2, 2019* because of the holiday."}

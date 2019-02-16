@@ -5,7 +5,6 @@ import HttpPipeline
 import Optics
 import Prelude
 import Tuple
-import Cryptor
 
 let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageAction, Data> =
   validateSlackSignature(signature: Current.envVars.slack.secret)
@@ -44,22 +43,15 @@ public func validateSlackSignature<A>(
   -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
     return { middleware in
       return { conn in
-        let signatureBasicString = zip(with: { "v0:\($0):\($1)" })(
-          conn.request.httpHeaderFieldsValue("X-Slack-Request-Timestamp"),
-          conn.request.httpBody.flatMap { String(data: $0, encoding: .utf8) }
-        ).flatMap { $0.data(using: .utf8) }
-
-        let signature = signature
-          .data(using: .utf8)
-          .flatMap { HMAC(using: .sha256, key: $0).update(data: signatureBasicString!)?.final() }
-          .flatMap { Data(bytes: $0).hexEncodedString() }
-          .map {"v0=\($0)" }
-
-        if conn.request.httpHeaderFieldsValue("X-Slack-Signature") == signature {
-          return middleware(conn)
+        guard
+          let headerSignature = conn.request.httpHeaderFieldsValue("X-Slack-Signature"),
+          let timestamp = conn.request.httpHeaderFieldsValue("X-Slack-Request-Timestamp"),
+          let computedDigest = slackComputedDigest(key: signature, body: conn.request.httpBody, timestamp: timestamp),
+          headerSignature == computedDigest else {
+            return conn |> unprocessableEntityError(failure)
         }
 
-        return conn |> unprocessableEntityError(failure)
+        return middleware(conn)
       }
     }
 }

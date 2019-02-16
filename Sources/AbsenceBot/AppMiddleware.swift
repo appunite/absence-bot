@@ -11,6 +11,7 @@ public let appMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit
   requestLogger { Current.logger.info($0) }
     <<< responseTimeout(25)
     <<< requireHttps(allowedInsecureHosts: allowedInsecureHosts)
+    <<< redirectUnrelatedHosts(isAllowedHost: { isAllowed(host: $0) }, canonicalHost: canonicalHost)
     <<< route(router: router)
     <| render(conn:)
 
@@ -42,6 +43,20 @@ private func render(conn: Conn<StatusLineOpen, Route>)
         |> slackInteractiveMessageActionMiddleware
     }
 }
+
+private func isAllowed(host: String) -> Bool {
+  return allowedHosts.contains(host)
+    || host.suffix(8) == "ngrok.io"
+}
+
+private let canonicalHost = "absences.appunite.com"
+private let allowedHosts: [String] = [
+  canonicalHost,
+  Current.envVars.baseUrl.host ?? canonicalHost,
+  "127.0.0.1",
+  "0.0.0.0",
+  "localhost"
+]
 
 private let allowedInsecureHosts: [String] = [
   "127.0.0.1",

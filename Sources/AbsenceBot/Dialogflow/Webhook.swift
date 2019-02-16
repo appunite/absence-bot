@@ -65,6 +65,29 @@ extension Webhook: Codable {
       .nestedContainer(keyedBy: Webhook.SlackEventCodingKeys.self, forKey: .event)
     self.user = try user.decodeIfPresent(Slack.User.Id.self, forKey: .user)
   }
+  
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder
+      .container(keyedBy: CustomCodingKeys.self)
+    try container.encode(self.session, forKey: .session)
+
+    // contextes
+    var queryResult = container
+      .nestedContainer(keyedBy: QueryResultCodingKeys.self, forKey: .queryResult)
+    try queryResult.encode(self.action, forKey: .action)
+    try queryResult.encodeIfPresent(self.outputContexts, forKey: .outputContexts)
+    
+    // slack data
+    var originalDetectIntentRequest = container
+      .nestedContainer(keyedBy: Webhook.OriginalDetectIntentRequestCodingKeys.self, forKey: .originalDetectIntentRequest)
+    var payload = originalDetectIntentRequest
+      .nestedContainer(keyedBy: Webhook.SlackPayloadCodingKeys.self, forKey: .payload)
+    var event = payload
+      .nestedContainer(keyedBy: Webhook.SlackDataCodingKeys.self, forKey: .data)
+    var user = event
+      .nestedContainer(keyedBy: Webhook.SlackEventCodingKeys.self, forKey: .event)
+    try user.encodeIfPresent(self.user, forKey: .user)
+  }
 }
 
 public let dialogflowJsonDecoder: JSONDecoder = { () in
