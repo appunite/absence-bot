@@ -141,7 +141,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     htmlLink: nil,
     created: nil,
     updated: nil,
-    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue) \(absence.reason.emoji)",
+    summary: "\(absence.requester.right!.profile.name) - \(absence.reason.rawValue) \(absence.reason.emojis.randomElement()!)",
     description: nil,
     start: startDateTime(from: absence.period),
     end: endDateTime(from: absence.period),
@@ -172,7 +172,18 @@ extension Absence {
     let period = self.period.dateRange(tz: Current.hqTimeZone())
 
     // generate text
-    return "<@\(self.requesterId)> is asking for vacant \(period) because of the \(self.reason.rawValue)."
+    switch self.reason {
+    case .illness:
+      return "<@\(self.requesterId)> _is not feeling good_ and is asking for vacant *\(period)* \(self.reason.emojis.first!)."
+    case .holiday:
+      return "<@\(self.requesterId)> will be unavailable because of _holidays_ planned *\(period)* \(self.reason.emojis.first!)."
+    case .remote:
+      return "<@\(self.requesterId)> would love to _work from home_: *\(period)* \(self.reason.emojis.first!)."
+    case .conference:
+      return "<@\(self.requesterId)> will participate in _conference_: *\(period)* \(self.reason.emojis.first!)."
+    case .school:
+      return "<@\(self.requesterId)> will be less available because of _school_ duties: *\(period)* \(self.reason.emojis.first!)."
+    }
   }
 }
 
@@ -192,18 +203,18 @@ extension Absence.Reason {
     }
   }
 
-  public var emoji: String {
+  public var emojis: [String] {
     switch self {
     case .illness:
-      return ["🤕", "🤧","🤒", "😷", "🤮"].randomElement()!
+      return ["🤒", "🤕", "🤧", "😷", "🤮"]
     case .holiday:
-      return ["🏄‍♂️", "🌴", "🍹", "🏖", "⛱"].randomElement()!
+      return ["🏖", "🏄‍♂️", "🌴", "🍹", "⛱"]
     case .remote:
-      return ["👻", "👨‍💻", "🏡", "👀"].randomElement()!
+      return ["🏡", "👻", "👨‍💻", "👀"]
     case .conference:
-      return ["👨‍🔬", "👨‍🏫", "🧠", "✍️"].randomElement()!
+      return ["👨‍🔬", "👨‍🏫", "🧠", "✍️"]
     case .school:
-      return ["🎓", "🦉", "😱", "🤯"].randomElement()!
+      return ["🦉", "🎓", "😱", "🤯"]
     }
   }
 }

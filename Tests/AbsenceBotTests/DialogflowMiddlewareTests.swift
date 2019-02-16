@@ -35,7 +35,7 @@ class DialogflowTests: TestCase {
   func testFullActionDialogflowWithTodayAndTimePeriod() {
     Current = .mock
 
-    let parameters = Context.Parameters.illness
+    let parameters = Context.Parameters.holiday
       |> \.timePeriod .~ .init(
         startTime: Date(timeIntervalSince1970: 1550325600),
         endTime: Date(timeIntervalSince1970: 1550336400))
@@ -52,7 +52,7 @@ class DialogflowTests: TestCase {
   func testFullActionDialogflowWithDatePeriod() {
     Current = .mock
 
-    let parameters = Context.Parameters.illness
+    let parameters = Context.Parameters.remote
       |> \.date .~ nil
       |> \.datePeriod .~ .init(
         startDate: Date(timeIntervalSince1970: 1550404800),
