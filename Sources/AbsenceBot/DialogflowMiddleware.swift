@@ -136,7 +136,11 @@ private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Per
   
   // period absence
   if let period = parameters.datePeriod {
-    return .init(dates: (period.startDate, period.endDate), tz: tz)
+    // sometimes dialogflow returns diffrent time, let's make it common to tread period ad full days
+    return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+      period.startDate.dateByReplacingTime(from: Date().startOfDay()),
+      period.endDate.dateByReplacingTime(from: Date().startOfDay())
+    )
   }
   
   // date period

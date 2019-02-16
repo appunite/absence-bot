@@ -48,4 +48,22 @@ class DialogflowTests: TestCase {
 
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
+
+  func testFullActionDialogflowWithDatePeriod() {
+    Current = .mock
+
+    let parameters = Context.Parameters.illness
+      |> \.date .~ nil
+      |> \.datePeriod .~ .init(
+        startDate: Date(timeIntervalSince1970: 1550404800),
+        endDate: Date(timeIntervalSince1970: 1550501349))
+    
+    let webhook = Webhook.mock
+      |> \.outputContexts <<< map <<< \.parameters .~ parameters
+    
+    let req = request(to: .dialogflow(webhook), basicAuth: true)
+    let conn = connection(from: req)
+    
+    assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
+  }
 }
