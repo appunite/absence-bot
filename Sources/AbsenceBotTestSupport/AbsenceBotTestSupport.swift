@@ -273,10 +273,17 @@ extension Context.Parameters {
     |> \.date .~ Date(timeIntervalSince1970: 1546344000)
 }
 
-extension Context.Parameters.Period {
-  public static let mock = Context.Parameters.Period(
+extension Context.Parameters.DatePeriod {
+  public static let mock = Context.Parameters.DatePeriod(
     startDate: Date(timeIntervalSince1970: 1546344000),
     endDate: Date(timeIntervalSince1970: 1546430400)
+  )
+}
+
+extension Context.Parameters.TimePeriod {
+  public static let mock = Context.Parameters.TimePeriod(
+    startTime: Date(timeIntervalSince1970: 1546344000),
+    endTime: Date(timeIntervalSince1970: 1546430400)
   )
 }
 

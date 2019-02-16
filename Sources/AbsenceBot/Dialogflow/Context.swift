@@ -20,13 +20,15 @@ public struct Context: Codable, Equatable {
     // @reason
     public private(set) var reason: String?
     // @sys.date-period
-    public private(set) var datePeriod: Period?
+    public private(set) var datePeriod: DatePeriod?
     // @sys.date
     public private(set) var date: Date?
     // @sys.date
     public private(set) var dateStart: Date?
     // @sys.date
     public private(set) var dateEnd: Date?
+    // @sys.time-period
+    public private(set) var timePeriod: TimePeriod?
     // @sys.time
     public private(set) var timeStart: Date?
     // @sys.time
@@ -38,17 +40,23 @@ public struct Context: Codable, Equatable {
     // @sys.date
     public private(set) var dates: [Date]?
 
-    public struct Period: Codable, Equatable {
+    public struct DatePeriod: Codable, Equatable {
       public private(set) var startDate: Date
       public private(set) var endDate: Date
     }
-    
+
+    public struct TimePeriod: Codable, Equatable {
+      public private(set) var startTime: Date
+      public private(set) var endTime: Date
+    }
+
     enum CodingKeys: String, CodingKey {
       case reason
       case datePeriod = "date-period"
       case date
       case dateStart = "date-start"
       case dateEnd = "date-end"
+      case timePeriod = "time-period"
       case timeStart = "time-start"
       case timeEnd = "time-end"
       case dateTimeStart = "date-time-start"
@@ -77,9 +85,12 @@ extension Context.Parameters {
     let _reason = try? container.decodeIfPresent(String.self, forKey: .reason)
     self.reason = _reason.flatMap(id)
     
-    let _datePeriod = try? container.decode(Period.self, forKey: .datePeriod)
+    let _datePeriod = try? container.decode(DatePeriod.self, forKey: .datePeriod)
     self.datePeriod = _datePeriod.flatMap(id)
-    
+
+    let _timePeriod = try? container.decode(TimePeriod.self, forKey: .timePeriod)
+    self.timePeriod = _timePeriod.flatMap(id)
+
     let _dates = try? container.decodeIfPresent([Date].self, forKey: .dates)
     self.dates = _dates.flatMap(id)
     

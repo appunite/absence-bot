@@ -14,21 +14,38 @@ class DialogflowTests: TestCase {
 //    record = true
   }
   
-  func testFullActionDialogflow() {
+  func testFillDateContextDialogflow() {
     Current = .mock
-
-    let webhook = request(to: .dialogflow(.full), basicAuth: true)
-    let conn = connection(from: webhook)
+    
+    let req = request(to: .dialogflow(.fillDate), basicAuth: true)
+    let conn = connection(from: req)
     
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
 
-  func testFillDateContextDialogflow() {
+  func testFullActionDialogflow() {
     Current = .mock
+
+    let req = request(to: .dialogflow(.full), basicAuth: true)
+    let conn = connection(from: req)
     
-    let webhook = request(to: .dialogflow(.fillDate), basicAuth: true)
-    let conn = connection(from: webhook)
-    
+    assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
+  }
+
+  func testFullActionDialogflowWithTodayAndTimePeriod() {
+    Current = .mock
+
+    let parameters = Context.Parameters.illness
+      |> \.timePeriod .~ .init(
+        startTime: Date(timeIntervalSince1970: 1550325600),
+        endTime: Date(timeIntervalSince1970: 1550336400))
+
+    let webhook = Webhook.mock
+      |> \.outputContexts <<< map <<< \.parameters .~ parameters
+
+    let req = request(to: .dialogflow(webhook), basicAuth: true)
+    let conn = connection(from: req)
+
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
 }

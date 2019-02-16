@@ -109,15 +109,24 @@ private func fulfillmentMiddleware(
 private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Period? {
   // single day absence
   if let date = parameters.date {
-    // if there is no information about time, just treat this as full day
-    guard let timeStart = parameters.timeStart, let timeEnd = parameters.timeEnd
-      else { return .init(dates: (date, date), tz: tz) }
-    
     // extend day with time information
-    return zip(with: { Absence.Period(dates: ($0, $1), tz: tz) })(
-      date.dateByReplacingTime(from: timeStart),
-      date.dateByReplacingTime(from: timeEnd)
-    )
+    if let timeStart = parameters.timeStart, let timeEnd = parameters.timeEnd {
+      return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+        date.dateByReplacingTime(from: timeStart),
+        date.dateByReplacingTime(from: timeEnd)
+      )
+    }
+
+    // extend day with time information
+    if let timePeriod = parameters.timePeriod {
+      return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+        date.dateByReplacingTime(from: timePeriod.startTime),
+        date.dateByReplacingTime(from: timePeriod.endTime)
+      )
+    }
+
+    // if there is no information about time, just treat this as full day
+    return .init(dates: (date, date), tz: tz)
   }
   
   // date time period
