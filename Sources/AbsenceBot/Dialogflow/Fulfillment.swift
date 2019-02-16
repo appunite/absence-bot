@@ -31,7 +31,7 @@ extension Fulfillment {
     case .holiday:
       return "So you're planning a *vacation* \(periodString), correct?" |> fulfillment
     case .remote:
-      return "So, you'll be working *remotely* and you're requesting for absence \(periodString), correct?" |> fulfillment
+      return "So, you're planning *remote* work \(periodString), correct?" |> fulfillment
     case .conference:
       return "So, you're going to the *conference* \(periodString), correct?" |> fulfillment
     case .school:
