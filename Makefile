@@ -1,6 +1,8 @@
 default: bootstrap-oss
 
 SWIFT := $(if $(shell command -v xcrun 2> /dev/null),xcrun swift,swift)
+HEROKU_STAGING_APP_NAME = "au-absence-bot-stage"
+HEROKU_REGISTRY = "registry.heroku.com"
 
 bootstrap-oss:
 	@echo "  ⚠️  Bootstrapping open-source Absence-Bot..."
@@ -70,19 +72,17 @@ linux-start:
 	docker-compose up --build
 
 env-local:
-	echo "to-do"
-	# heroku config --json -a pointfreeco-local > .env
+	heroku config --json -a $(HEROKU_STAGING_APP_NAME) > .env
 
 deploy-local:
-	echo "to-do"
-	# @heroku container:push web -a pointfreeco-local
-	# @heroku container:release web -a pointfreeco-local
+	@heroku container:login
+	@heroku container:push web -a $HEROKU_STAGING_APP_NAME
+	@heroku container:release web -a $HEROKU_STAGING_APP_NAME
 
-deploy-production:
-	echo "to-do"
-	# @heroku container:login
-	# @heroku container:push web -a pointfreeco
-	# @heroku container:release web -a pointfreeco
+	# @docker login --username=_ --password=$(HEROKU_TOKEN) $(HEROKU_REGISTRY)
+	# @docker build -t $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web .
+	# @docker push $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web
+	# @docker run --rm -e HEROKU_API_KEY=$(HEROKU_TOKEN) wingrunr21/alpine-heroku-cli container:release web --app $(HEROKU_STAGING_APP_NAME)
 
 test-linux: sourcery
 	docker-compose up --abort-on-container-exit --build
