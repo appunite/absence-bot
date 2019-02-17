@@ -11,5 +11,4 @@ _ = try! AbsenceBot
   .unwrap()
 
 // Server
-run(appMiddleware, on: 8080, gzip: true, baseUrl: URL(string: "http://localhost:8080")!)
-
+run(appMiddleware, on: Current.envVars.port, gzip: true, baseUrl: Current.envVars.baseUrl)
