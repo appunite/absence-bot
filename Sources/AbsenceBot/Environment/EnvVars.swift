@@ -53,22 +53,18 @@ public struct EnvVars: Codable {
   }
 
   public struct Google: Codable {
-    public var calendar = "appunite.com_bot@group.calendar.google.com"
-    public var clientEmail = "absencebot-server@absencebot-360ba.iam.gserviceaccount.com"
-    public var clientId = "108750301185230262303"
-    public var appName = "absencebot"
-    
     /*
      Need to be if PKCS1 fromat. Google return as default in PKCS8 fromat. To convert please use this command:
      $ openssl rsa -in server.key -out server_new.key
      */
     public var privteKey = "-----BEGIN PRIVATE KEY-----\nnMIIEvgbFpvf\n-----END PRIVATE KEY-----\n"
+    public var calendar = "appunite.com_bot@group.calendar.google.com"
+    public var clientEmail = "absencebot-server@absencebot-360ba.iam.gserviceaccount.com"
+
     private enum CodingKeys: String, CodingKey {
+      case privteKey = "GOOGLE_PRIVATE_KEY"
       case calendar = "GOOGLE_CALENDAR_ID"
       case clientEmail = "GOOGLE_CLIENT_EMAIL"
-      case clientId = "GOOGLE_CLIENT_ID"
-      case appName = "GOOGLE_APP_NAME"
-      case privteKey = "GOOGLE_PRIVATE_KEY"
     }
   }
 }
