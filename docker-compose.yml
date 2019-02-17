@@ -14,8 +14,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.local
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
     environment:
       DATABASE_URL: postgres://postgres:@db:5432/absencebot_development
     ports:
