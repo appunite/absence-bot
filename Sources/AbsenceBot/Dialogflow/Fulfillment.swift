@@ -12,7 +12,7 @@ public struct Fulfillment: Encodable {
 }
 
 extension Fulfillment {
-  public static let missingPeriod = Fulfillment(text: "*When* are you planning to take time off?", contexts: nil)
+  public static let missingInterval = Fulfillment(text: "*When* are you planning to take time off?", contexts: nil)
   public static let missingReason = Fulfillment(text: "What is the *reason* you're taking days off?", contexts: nil)
 
   public static func compliments(contexts: [Context]) -> Fulfillment {
@@ -20,22 +20,22 @@ extension Fulfillment {
   }
 
   public static func confirmation(absence: Absence, context: Context) -> Fulfillment {
-    let periodString = absence.period
+    let intervalString = absence.interval
       .dateRange(tz: absence.requester.right!.tz)
 
     let fulfillment = { Fulfillment(text: $0, contexts: [context]) }
 
     switch absence.reason {
     case .illness:
-      return "So, you feel *sick* and you are going to take day(s) off \(periodString), correct?" |> fulfillment
+      return "So, you feel *sick* and you are going to take day(s) off \(intervalString), correct?" |> fulfillment
     case .holiday:
-      return "So you're planning a *vacation* \(periodString), correct?" |> fulfillment
+      return "So you're planning a *vacation* \(intervalString), correct?" |> fulfillment
     case .remote:
-      return "So, you're planning *remote* work \(periodString), correct?" |> fulfillment
+      return "So, you're planning *remote* work \(intervalString), correct?" |> fulfillment
     case .conference:
-      return "So, you're going to the *conference* \(periodString), correct?" |> fulfillment
+      return "So, you're going to the *conference* \(intervalString), correct?" |> fulfillment
     case .school:
-      return "So, you'll be at *school* and you're requesting for absence \(periodString), correct?" |> fulfillment
+      return "So, you'll be at *school* and you're requesting for absence \(intervalString), correct?" |> fulfillment
     }
   }
 }

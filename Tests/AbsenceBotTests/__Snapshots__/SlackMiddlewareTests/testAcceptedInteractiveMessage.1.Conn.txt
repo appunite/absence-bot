@@ -1,8 +1,8 @@
 POST http://localhost:8080/slack
 X-Slack-Request-Timestamp: 1546344000
-X-Slack-Signature: v0=37af35063a294fb68cbe7cf0935720297fb4f355eb13404d4d9231a464f6665d
+X-Slack-Signature: v0=656e94ce1bca0d64d717dbd2dcf7f086c658fe3b20d7e7acf149aad22931100c
 
-payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsInJlYXNvbiI6ImhvbGlkYXkiLCJyZXF1ZXN0ZXIiOiJKQUtLT1ciLCJwZXJpb2QiOnsic3RhcnRlZEF0Ijo1NjgwMzY4MDAsImZpbmlzaGVkQXQiOjU2ODEyMzIwMH19%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22accept%22,%22type%22:%22button%22,%22value%22:%22accept%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
+payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsImludGVydmFsIjp7InN0YXJ0Ijo1NjgwMzY4MDAsImVuZCI6NTY4MTIzMjAwfSwicmVhc29uIjoiaG9saWRheSIsInJlcXVlc3RlciI6IkpBS0tPVyJ9%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22accept%22,%22type%22:%22button%22,%22value%22:%22accept%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
 
 200 OK
 Content-Length: 485

@@ -80,8 +80,8 @@ private func fulfillmentMiddleware(
       guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
         else { return middleware <| conn.map(const(.missingReason .*. nil)) }
       
-      guard let period = period(parameters: followupContext.parameters, tz: user.tz)
-        else { return middleware <| conn.map(const(.missingPeriod .*. nil)) }
+      guard let interval = dateInterval(parameters: followupContext.parameters, tz: user.tz)
+        else { return middleware <| conn.map(const(.missingInterval .*. nil)) }
       
       if case .accept = payload.action {
         // we're done, send thanks comment and clear out contextes
@@ -91,13 +91,13 @@ private func fulfillmentMiddleware(
         )
         
         return middleware
-          <| conn.map(const(fulfillment .*. .pending(requester: user, period: period, reason: reason)))
+          <| conn.map(const(fulfillment .*. .pending(requester: user, interval: interval, reason: reason)))
       }
       
       // we have all date, let's ask user if everytking is ok
       let fulfillment = Fulfillment
         .confirmation(
-          absence: .pending(requester: user, period: period, reason: reason),
+          absence: .pending(requester: user, interval: interval, reason: reason),
           context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
       
       return middleware
@@ -106,7 +106,7 @@ private func fulfillmentMiddleware(
   }
 }
 
-private func period(parameters: Context.Parameters, tz: TimeZone) -> Absence.Period? {
+private func dateInterval(parameters: Context.Parameters, tz: TimeZone) -> DateInterval? {
   // single day absence
   if let date = parameters.date {
     // extend day with time information

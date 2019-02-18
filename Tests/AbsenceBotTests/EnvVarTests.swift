@@ -16,9 +16,7 @@ class EnvVarTests: TestCase {
       "SLACK_AUTH_TOKEN": "xoxb-1115164490-464635012382-76zULi9AzSQ2GG7RcAXgVeSi",
       "SLACK_SIGNING_SECRET": "a0e2f6c6090d1d3a9ee699c0065c2a3f",
       "GOOGLE_CALENDAR_ID": "appunite%40group.calendar.google.com",
-      "GOOGLE_APP_NAME": "absencebot",
       "GOOGLE_CLIENT_EMAIL": "absencebot@absencebot.iam.gserviceaccount.com",
-      "GOOGLE_CLIENT_ID": "111750471181130264313",
       "GOOGLE_PRIVATE_KEY": "-----BEGIN RSA PRIVATE KEY-----MIIEpAIBAAKCAQEA4wClrl66Gxab3zldb-----END RSA PRIVATE KEY-----\n"
     ]
 

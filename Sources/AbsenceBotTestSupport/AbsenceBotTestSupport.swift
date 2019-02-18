@@ -96,7 +96,7 @@ extension GoogleCalendar.OAuthPayload {
 extension Absence {
   public static let mock = Absence(
     requester: .left("JAKKOW"),
-    period: .mock,
+    interval: .mock,
     reason: .holiday,
     status: .approved,
     reviewer: .left("JAKKOW"),
@@ -105,7 +105,7 @@ extension Absence {
 
   public static let interactiveMessageActionPayloadMock = Absence(
     requester: .left("JAKKOW"),
-    period: .mock,
+    interval: .mock,
     reason: .holiday,
     status: .pending,
     reviewer: nil,
@@ -113,10 +113,10 @@ extension Absence {
   )
 }
 
-extension Absence.Period {
-  public static let mock = Absence.Period(
-    startedAt: Date(timeIntervalSince1970: 1546344000),
-    finishedAt: Date(timeIntervalSince1970: 1546430400)
+extension AbsenceBot.DateInterval {
+  public static let mock = AbsenceBot.DateInterval(
+    start: Date(timeIntervalSince1970: 1546344000),
+    end: Date(timeIntervalSince1970: 1546430400)
   )
 }
 
