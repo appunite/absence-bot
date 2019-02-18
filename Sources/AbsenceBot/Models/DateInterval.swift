@@ -20,12 +20,11 @@ extension DateInterval {
   }
   
   public var isAllDay: Bool {
-    let dateComponentsA = Calendar.gmtTimeZoneCalendar
-      .dateComponents([.hour, .minute, .second], from: start)
-    let dateComponentsB = Calendar.gmtTimeZoneCalendar
-      .dateComponents([.hour, .minute, .second], from: end)
-    
-    return dateComponentsA == dateComponentsB
+    let calendar = Calendar.gmtTimeZoneCalendar
+    let components: Set<Calendar.Component> = [.hour, .minute, .second]
+
+    return calendar.dateComponents(components, from: start)
+      == calendar.dateComponents(components, from: end)
   }
 }
 
