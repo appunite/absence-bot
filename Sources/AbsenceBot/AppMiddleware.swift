@@ -47,9 +47,10 @@ private func render(conn: Conn<StatusLineOpen, Route>)
 private func isAllowed(host: String) -> Bool {
   return allowedHosts.contains(host)
     || host.suffix(8) == "ngrok.io"
+    || host.suffix(12) == "appunite.com"
 }
 
-private let canonicalHost = "absences.appunite.com"
+private let canonicalHost = "au-absence-bot-stage.herokuapp.com"
 private let allowedHosts: [String] = [
   canonicalHost,
   Current.envVars.baseUrl.host ?? canonicalHost,
