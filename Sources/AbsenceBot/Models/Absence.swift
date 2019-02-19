@@ -129,15 +129,15 @@ extension Absence.Reason {
   public var colorId: String {
     switch self {
     case .illness:
-      return "11"
+      return "2"
     case .holiday:
-      return "10"
-    case .remote:
       return "7"
-    case .conference:
-      return "3"
-    case .school:
+    case .remote:
       return "5"
+    case .conference:
+      return "0"
+    case .school:
+      return "9"
     }
   }
 
