@@ -23,7 +23,7 @@ private func decodeAbsenceMiddleware(
   return { conn in
     guard let absence = conn.data.absence else {
       return conn
-        |> internalServerError(respond(text: "Can't decode absence payload data."))
+        |> respond(error: "Sorry, can't decode absence payload data. Please try again.")
     }
 
     let updatedAbsence = absence
@@ -33,27 +33,6 @@ private func decodeAbsenceMiddleware(
     return conn.map(const(updatedAbsence))
       |> middleware
   }
-}
-
-public func validateSlackSignature<A>(
-  signature: String,
-  failure: @escaping Middleware<HeadersOpen, ResponseEnded, A, Data> = respond(text: "Wrong signature.")
-  )
-  -> (@escaping Middleware<StatusLineOpen, ResponseEnded, A, Data>)
-  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
-    return { middleware in
-      return { conn in
-        guard
-          let headerSignature = conn.request.httpHeaderFieldsValue("X-Slack-Signature"),
-          let timestamp = conn.request.httpHeaderFieldsValue("X-Slack-Request-Timestamp"),
-          let computedDigest = slackComputedDigest(key: signature, body: conn.request.httpBody, timestamp: timestamp),
-          headerSignature == computedDigest else {
-            return conn |> unprocessableEntityError(failure)
-        }
-
-        return middleware(conn)
-      }
-    }
 }
 
 private func sendRejectionMessagesMiddleware(
@@ -71,11 +50,11 @@ private func sendRejectionMessagesMiddleware(
 
         case let .right(.left(e)):
           return conn
-            |> internalServerError(respond(text: e.error))
+            |> respond(error: e.error)
           
         case let .left(e):
           return conn
-            |> internalServerError(respond(text: e.localizedDescription))
+            |> respond(error: e.localizedDescription)
         }
     }
   }
@@ -108,13 +87,13 @@ private func fetchAcceptanceComponentsMiddleware(
       .sequential
       .flatMap { result in
         guard let requesterUser = result.0
-          else { return conn |> internalServerError(respond(text: "Can't fetch requester slack user.")) }
+          else { return conn |> respond(error: "Sorry, can't fetch requester slack user. Please try again.") }
 
         guard let reviewerUser = result.1
-          else { return conn |> internalServerError(respond(text: "Can't fetch reviewer slack user.")) }
+          else { return conn |> respond(error: "Sorry, can't fetch reviewer slack user. Please try again.") }
 
         guard let token = result.2
-          else { return conn |> internalServerError(respond(text: "Can't fetch google auth token.")) }
+          else { return conn |> respond(error: "Sorry, can't fetch google auth token. Please try again.") }
 
         let updatedAbsence = conn.data
           |> \.requester .~ .right(requesterUser)
@@ -147,7 +126,7 @@ private func createCalendarEventMiddleware(
           
         case let .left(e):
           return conn
-            |> internalServerError(respond(text: e.localizedDescription))
+          |> respond(error: e.localizedDescription)
         }
     }
   }
@@ -164,18 +143,46 @@ private func sendAcceptanceMessagesMiddleware(
       .flatMap { errorOrUser in
         switch errorOrUser {
         case .right(.right):
-          // send fallback message about action result
           return conn.map(const(.acceptanceFallback(absence: conn.data)))
             |> middleware
           
         case let .right(.left(e)):
           return conn
-            |> internalServerError(respond(text: e.error))
+            |> respond(error: e.error)
           
         case let .left(e):
           return conn
-            |> internalServerError(respond(text: e.localizedDescription))
+            |> respond(error: e.localizedDescription)
         }
     }
   }
+}
+
+private func validateSlackSignature<A>(
+  signature: String
+  )
+  -> (@escaping Middleware<StatusLineOpen, ResponseEnded, A, Data>)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return { middleware in
+      return { conn in
+        guard
+          let headerSignature = conn.request.httpHeaderFieldsValue("X-Slack-Signature"),
+          let timestamp = conn.request.httpHeaderFieldsValue("X-Slack-Request-Timestamp"),
+          let computedDigest = slackComputedDigest(key: signature, body: conn.request.httpBody, timestamp: timestamp),
+          headerSignature == computedDigest else {
+            return conn |> head(.unprocessableEntity)
+        }
+        
+        return middleware(conn)
+      }
+    }
+}
+
+private func respond<A>(
+  error: String)
+  -> Middleware<StatusLineOpen, ResponseEnded, A, Data> {
+    return { conn in
+      return conn.map(const(InteractiveMessageActionError(text: error)))
+        |> respond(.unprocessableEntity)
+    }
 }
