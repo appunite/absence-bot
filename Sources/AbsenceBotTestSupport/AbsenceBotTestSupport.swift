@@ -95,19 +95,21 @@ extension GoogleCalendar.OAuthPayload {
 
 extension Absence {
   public static let mock = Absence(
+    status: .approved,
     requester: .left("JAKKOW"),
     interval: .mock,
     reason: .holiday,
-    status: .approved,
+    channel: "DDNGJ2SLE",
     reviewer: .left("JAKKOW"),
     event: .mock
   )
 
   public static let interactiveMessageActionPayloadMock = Absence(
+    status: .pending,
     requester: .left("JAKKOW"),
     interval: .mock,
     reason: .holiday,
-    status: .pending,
+    channel: "DDNGJ2SLE",
     reviewer: nil,
     event: nil
   )
@@ -207,7 +209,9 @@ extension Slack.Message {
 
 extension Slack.Message.Attachment {
   public static let mock = Slack.Message.Attachment(
+    title: "some title",
     text: "some text",
+    color: "#123456",
     fallback: "fallback",
     callbackId: "1",
     actions: nil)
@@ -216,8 +220,9 @@ extension Slack.Message.Attachment {
 extension Slack.Message.Attachment.InteractiveAction {
   public static let mock = Slack.Message.Attachment.InteractiveAction(
     name: "accept",
-    text: nil,
     type: "button",
+    style: nil,
+    text: nil,
     value: .accept
   )
 
@@ -291,6 +296,7 @@ extension Webhook {
   public static let mock = Webhook(
     session: URL(string: "projects/absencebot/agent/sessions/676f5d76-6466-4fa6-9df4-659ba7bad991")!,
     user: "U456V5Q4E",
+    channel: "DDNGJ2SLE",
     action: .fillDate,
     outputContexts: [.mock]
   )
