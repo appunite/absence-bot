@@ -141,6 +141,21 @@ extension Absence.Reason {
     }
   }
 
+  public var colorHex: String {
+    switch self {
+    case .illness:
+      return "#5db27e"
+    case .holiday:
+      return "#439bdf"
+    case .remote:
+      return "#eebf4b"
+    case .conference:
+      return "#966dab"
+    case .school:
+      return "#4154af"
+    }
+  }
+
   public var emojis: [String] {
     switch self {
     case .illness:
