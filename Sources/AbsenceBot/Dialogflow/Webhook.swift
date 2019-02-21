@@ -2,10 +2,11 @@ import Foundation
 
 public struct Webhook: Equatable {
   public private(set) var session: URL
-  public private(set) var user: Slack.User.Id?
+  public private(set) var user: Slack.User.Id
+  public private(set) var channel: Slack.Message.Channel
   public private(set) var action: Action
   public private(set) var outputContexts: [Context]
-  
+
   public enum Action: String, Codable {
     case full = "absenceday.absenceday-full"
     case fillDate = "absenceday.absenceday-fill-date"
@@ -26,6 +27,7 @@ public struct Webhook: Equatable {
 
   private enum SlackEventCodingKeys: String, CodingKey {
     case user
+    case channel
   }
 
   private enum CustomCodingKeys: String, CodingKey {
@@ -59,11 +61,12 @@ extension Webhook: Codable {
       .nestedContainer(keyedBy: Webhook.OriginalDetectIntentRequestCodingKeys.self, forKey: .originalDetectIntentRequest)
     let payload = try originalDetectIntentRequest
       .nestedContainer(keyedBy: Webhook.SlackPayloadCodingKeys.self, forKey: .payload)
-    let event = try payload
+    let data = try payload
       .nestedContainer(keyedBy: Webhook.SlackDataCodingKeys.self, forKey: .data)
-    let user = try event
+    let event = try data
       .nestedContainer(keyedBy: Webhook.SlackEventCodingKeys.self, forKey: .event)
-    self.user = try user.decodeIfPresent(Slack.User.Id.self, forKey: .user)
+    self.user = try event.decode(Slack.User.Id.self, forKey: .user)
+    self.channel = try event.decode(Slack.Message.Channel.self, forKey: .channel)
   }
   
   public func encode(to encoder: Encoder) throws {
@@ -82,11 +85,12 @@ extension Webhook: Codable {
       .nestedContainer(keyedBy: Webhook.OriginalDetectIntentRequestCodingKeys.self, forKey: .originalDetectIntentRequest)
     var payload = originalDetectIntentRequest
       .nestedContainer(keyedBy: Webhook.SlackPayloadCodingKeys.self, forKey: .payload)
-    var event = payload
+    var data = payload
       .nestedContainer(keyedBy: Webhook.SlackDataCodingKeys.self, forKey: .data)
-    var user = event
+    var event = data
       .nestedContainer(keyedBy: Webhook.SlackEventCodingKeys.self, forKey: .event)
-    try user.encodeIfPresent(self.user, forKey: .user)
+    try event.encode(self.user, forKey: .user)
+    try event.encode(self.channel, forKey: .channel)
   }
 }
 

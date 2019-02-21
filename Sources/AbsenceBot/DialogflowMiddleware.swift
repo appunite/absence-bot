@@ -41,12 +41,7 @@ private func slackUserMiddleware(
   ) -> Middleware<StatusLineOpen, ResponseEnded, Webhook, Data> {
   
   return { conn in
-    guard let user = conn.data.user else {
-      return conn
-        |> internalServerError(respond(text: "Missing slack user."))
-    }
-    
-    return Current.slack.fetchUser(user)
+    return Current.slack.fetchUser(conn.data.user)
       .run
       .flatMap { errorOrUser in
         switch errorOrUser {
@@ -91,13 +86,13 @@ private func fulfillmentMiddleware(
         )
         
         return middleware
-          <| conn.map(const(fulfillment .*. .pending(requester: user, interval: interval, reason: reason)))
+          <| conn.map(const(fulfillment .*. .pending(requester: user, interval: interval, reason: reason, channel: payload.channel)))
       }
       
       // we have all date, let's ask user if everytking is ok
       let fulfillment = Fulfillment
         .confirmation(
-          absence: .pending(requester: user, interval: interval, reason: reason),
+          absence: .pending(requester: user, interval: interval, reason: reason, channel: payload.channel),
           context: payload.fullContext(lifespanCount: 2, params: followupContext.parameters))
       
       return middleware

@@ -4,12 +4,25 @@ import Prelude
 import Optics
 
 public struct Absence: Codable, Equatable {
+  /// Keeps information about request status
+  public var status: Status
+
+  /// Defines who is requesting for absence
   public var requester: Either<Slack.User.Id, Slack.User>
+  
+  /// Defines when absence is requested
   public var interval: DateInterval
+  
+  /// Defines why requester is requesting for an absence
   public var reason: Reason
   
-  public var status: Status
+  /// Defines bot channel, used to information where respond about status change
+  public var channel: Slack.Message.Channel
+  
+  /// Defines user Slack identifier or object of user who make a decition
   public var reviewer: Either<Slack.User.Id, Slack.User>?
+
+  /// Defines Google Calendar Event object if request is approved
   public var event: GoogleCalendar.Event?
 
   public enum Status: Int, Codable, Equatable {
@@ -29,8 +42,8 @@ public struct Absence: Codable, Equatable {
 }
 
 extension Absence {
-  public static func pending(requester: Slack.User, interval: DateInterval, reason: Absence.Reason) -> Absence {
-    return .init(requester: .right(requester), interval: interval, reason: reason, status: .pending, reviewer: nil, event: nil)
+  public static func pending(requester: Slack.User, interval: DateInterval, reason: Absence.Reason, channel: Slack.Message.Channel) -> Absence {
+    return .init(status: .pending, requester: .right(requester), interval: interval, reason: reason, channel: channel, reviewer: nil, event: nil)
   }
 }
 

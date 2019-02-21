@@ -63,8 +63,10 @@ public struct Slack {
   }
 
   public struct Message: Codable {
+    public typealias Channel = Tagged<Message, String>
+
     public private(set) var text: String?
-    public private(set) var channel: String
+    public private(set) var channel: Channel
     public private(set) var attachments: [Attachment]
     
     public struct Attachment: Codable {
@@ -199,7 +201,7 @@ extension Slack.Message.Attachment {
     let text = """
     Your approval is requested here.
     \(absence.announcementMessageText)
-    ✅ \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " You can check calendar event <\($0.absoluteString)|here>" } ?? "")
+    ✅ \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " You can check calendar event <\($0.absoluteString)|here>" } ?? "").
     """
 
     return .init(title: "Approval Request", text: text, color: absence.reason.colorHex, fallback: nil, callbackId: nil, actions: nil)
@@ -241,12 +243,12 @@ extension Slack.Message {
     // generate message
     return .init(
       text: nil,
-      channel: Current.envVars.slack.channel,
+      channel: .init(rawValue: Current.envVars.slack.channel),
       attachments: [.announcementAttachment(absence: absence)])
   }
   
   public static func rejectionNotificationMessage(absence: Absence) -> Slack.Message {
-    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: absence.requesterId.rawValue, attachments: [])
+    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: absence.channel, attachments: [])
   }
   
   public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
@@ -255,7 +257,7 @@ extension Slack.Message {
 
     // generate message
     let message = {
-      Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.requesterId.rawValue, attachments: $0)
+      Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.channel, attachments: $0)
     }
 
     switch absence.reason {
