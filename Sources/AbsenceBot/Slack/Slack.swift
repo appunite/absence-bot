@@ -84,8 +84,9 @@ public struct Slack {
       
       public struct InteractiveAction: Codable, Equatable {
         public private(set) var name: String
-        public private(set) var text: String?
         public private(set) var type: String
+        public private(set) var style: String?
+        public private(set) var text: String?
         public private(set) var value: Action
         
         public enum Action: String, Codable {
@@ -215,8 +216,8 @@ extension Slack.Message.Attachment {
       fallback: "Absence acceptance interactive message",
       callbackId: payload,
       actions: [
-        .init(name: "accept", text: "Accept 👍", type: "button", value: .accept),
-        .init(name: "reject", text: "Reject 👎", type: "button", value: .reject)]
+        .init(name: "accept", type: "button", style: "primary", text: "Approve", value: .accept),
+        .init(name: "reject", type: "button", style: "danger", text: "Reject", value: .reject)]
     )
   }
 }
