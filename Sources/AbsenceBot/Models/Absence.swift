@@ -112,15 +112,15 @@ extension Absence {
     // generate text
     switch self.reason {
     case .illness:
-      return "<@\(self.requesterId)> _is not feeling good_ and is asking for vacant \(interval) \(self.reason.emojis.first!)."
+      return "<@\(self.requesterId)> _is not feeling good_ and is asking for vacant \(interval) \(self.reason.emojis.first!)"
     case .holiday:
-      return "<@\(self.requesterId)> will be unavailable because of _holidays_ planned \(interval) \(self.reason.emojis.first!)."
+      return "<@\(self.requesterId)> will be unavailable because of _holidays_ planned \(interval) \(self.reason.emojis.first!)"
     case .remote:
-      return "<@\(self.requesterId)> would love to _work from home_: \(interval) \(self.reason.emojis.first!)."
+      return "<@\(self.requesterId)> would love to _work from home_: \(interval) \(self.reason.emojis.first!)"
     case .conference:
-      return "<@\(self.requesterId)> will participate in _conference_: \(interval) \(self.reason.emojis.first!)."
+      return "<@\(self.requesterId)> will participate in _conference_: \(interval) \(self.reason.emojis.first!)"
     case .school:
-      return "<@\(self.requesterId)> will be less available because of _school_ duties: \(interval) \(self.reason.emojis.first!)."
+      return "<@\(self.requesterId)> will be less available because of _school_ duties: \(interval) \(self.reason.emojis.first!)"
     }
   }
 }

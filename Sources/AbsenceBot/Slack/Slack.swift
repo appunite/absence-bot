@@ -63,7 +63,7 @@ public struct Slack {
   }
 
   public struct Message: Codable {
-    public private(set) var text: String
+    public private(set) var text: String?
     public private(set) var channel: String
     public private(set) var attachments: [Attachment]
     
@@ -196,11 +196,23 @@ private let slackJsonEncoder = JSONEncoder()
 
 extension Slack.Message.Attachment {
   public static func acceptanceAttachement(absence: Absence) -> Slack.Message.Attachment {
-    return .init(title: "Approval Request", text: "\(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " You can check calendar event <\($0.absoluteString)|here>" } ?? "")", color: absence.reason.colorHex, fallback: nil, callbackId: nil, actions: nil)
+    let text = """
+    Your approval is requested here.
+    \(absence.announcementMessageText)
+    ✅ \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " You can check calendar event <\($0.absoluteString)|here>" } ?? "")
+    """
+
+    return .init(title: "Approval Request", text: text, color: absence.reason.colorHex, fallback: nil, callbackId: nil, actions: nil)
   }
 
   public static func rejectionAttachement(absence: Absence) -> Slack.Message.Attachment {
-    return .init(title: "Approval Request", text: "\(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") rejected this request.", color: absence.reason.colorHex, fallback: nil, callbackId: nil, actions: nil)
+    let text = """
+    Your approval is requested here.
+    \(absence.announcementMessageText)
+    🚫 \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") rejected this request.
+    """
+
+    return .init(title: "Approval Request", text: text, color: absence.reason.colorHex, fallback: nil, callbackId: nil, actions: nil)
   }
   
   public static func announcementAttachment(absence: Absence) -> Slack.Message.Attachment {
@@ -213,7 +225,7 @@ extension Slack.Message.Attachment {
     
     return .init(
       title: "Approval Request",
-      text: "Your approval is requested here.",
+      text: "Your approval is requested here.\n\(absence.announcementMessageText)",
       color: absence.reason.colorHex,
       fallback: "Absence acceptance interactive message",
       callbackId: payload,
@@ -228,7 +240,7 @@ extension Slack.Message {
   public static func announcementMessage(absence: Absence) -> Slack.Message {
     // generate message
     return .init(
-      text: absence.announcementMessageText,
+      text: nil,
       channel: Current.envVars.slack.channel,
       attachments: [.announcementAttachment(absence: absence)])
   }
