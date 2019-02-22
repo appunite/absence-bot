@@ -10,8 +10,8 @@ import Html
 public let appMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit, Data> =
   requestLogger { Current.logger.info($0) }
     <<< responseTimeout(25)
-    <<< requireHttps(allowedInsecureHosts: allowedInsecureHosts)
-    <<< redirectUnrelatedHosts(isAllowedHost: { isAllowed(host: $0) }, canonicalHost: canonicalHost)
+//    <<< requireHttps(allowedInsecureHosts: allowedInsecureHosts)
+//    <<< redirectUnrelatedHosts(isAllowedHost: { isAllowed(host: $0) }, canonicalHost: canonicalHost)
     <<< route(router: router)
     <| render(conn:)
 
