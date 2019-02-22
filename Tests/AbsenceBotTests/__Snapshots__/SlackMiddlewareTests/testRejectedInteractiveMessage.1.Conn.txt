@@ -1,11 +1,11 @@
 POST http://localhost:8080/slack
 X-Slack-Request-Timestamp: 1546344000
-X-Slack-Signature: v0=0b2d56b590e11479a82cee509138841b0a73e24ebce4f63df644a6c324c7db2f
+X-Slack-Signature: v0=1ad87ad59d460ca66e4ac2096eab44ba53c4b0c1f65d2baf4cbb18e437d03cf8
 
-payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsImludGVydmFsIjp7InN0YXJ0Ijo1NjgwMzY4MDAsImVuZCI6NTY4MTIzMjAwfSwicmVhc29uIjoiaG9saWRheSIsInJlcXVlc3RlciI6IkpBS0tPVyJ9%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22reject%22,%22type%22:%22button%22,%22value%22:%22reject%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
+payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsImludGVydmFsIjp7InN0YXJ0Ijo1NjgwMzY4MDAsImVuZCI6NTY4MTIzMjAwfSwicmVxdWVzdGVyIjoiSkFLS09XIiwicmVhc29uIjoiaG9saWRheSIsImNoYW5uZWwiOiJERE5HSjJTTEUifQ%3D%3D%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22reject%22,%22type%22:%22button%22,%22value%22:%22reject%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
 
 200 OK
-Content-Length: 300
+Content-Length: 304
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -14,4 +14,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-{"attachments":[{"text":"Thank you, <@U456V5Q4E>, for making this decision! I'll notify <@JAKKOW> about rejecting absence request"}],"replace_original":true,"response_type":"ephemeral","text":"<@JAKKOW> will be unavailable because of _holidays_ planned **January 1, 2019* - *January 2, 2019** 🏖."}
+{"replace_original":true,"attachments":[{"title":"Approval Request","text":"Your approval is requested here.\n<@JAKKOW> will be unavailable because of _holidays_ planned *January 1, 2019* - *January 2, 2019* 🏖\n🚫 <@U456V5Q4E> rejected this request.","color":"#439bdf"}],"response_type":"ephemeral"}

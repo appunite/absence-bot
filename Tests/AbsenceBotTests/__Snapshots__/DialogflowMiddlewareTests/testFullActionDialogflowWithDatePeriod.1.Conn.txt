@@ -1,7 +1,7 @@
 POST http://localhost:8080/dialogflow
 Authorization: Basic aGVsbG86d29ybGQ=
 
-{"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991","queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"date-period":{"endDate":"2019-02-18T14:49:09Z","startDate":"2019-02-17T12:00:00Z"},"reason":"remote"},"lifespanCount":5}]},"originalDetectIntentRequest":{"payload":{"data":{"event":{"user":"U456V5Q4E"}}}}}
+{"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991","queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"date-period":{"endDate":"2019-02-18T14:49:09Z","startDate":"2019-02-17T12:00:00Z"},"reason":"remote"},"lifespanCount":5}]},"originalDetectIntentRequest":{"payload":{"data":{"event":{"channel":"DDNGJ2SLE","user":"U456V5Q4E"}}}}}
 
 200 OK
 Content-Length: 375
