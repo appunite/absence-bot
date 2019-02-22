@@ -31,6 +31,27 @@ class SlackTests: TestCase {
     
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
+  
+  func testGoogleCalendarEventRange() {
+    let action = InteractiveMessageAction.accept
+    update(
+      &Current,
+      \.calendar .~ GoogleCalendar(
+        fetchAuthToken: { pure(pure(.mock)) },
+        createEvent: { _, event in
+          XCTAssertEqual(event.start.date, action.absence?.interval.start)
+          XCTAssertEqual(event.end.date, action.absence?.interval.end)
+          return pure(.mock)
+        }
+      )
+    )
+
+    let webhook = request(to: .slack(action)) |> signRequest
+    let conn = connection(from: webhook)
+    
+    _ = appMiddleware(conn)
+      .perform()
+  }
 }
 
 private func signRequest(_ request: URLRequest) -> URLRequest {

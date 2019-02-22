@@ -106,13 +106,13 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
 private func startDateTime(from interval: DateInterval) -> GoogleCalendar.Event.DateTime {
   return .init(
     date: interval.isAllDay ? interval.start : nil,
-    dateTime: !interval.isAllDay ? interval.end : nil
+    dateTime: !interval.isAllDay ? interval.start : nil
   )
 }
 
 private func endDateTime(from interval: DateInterval) -> GoogleCalendar.Event.DateTime {
   return .init(
-    date: interval.isAllDay ? interval.start : nil,
+    date: interval.isAllDay ? interval.end : nil,
     dateTime: !interval.isAllDay ? interval.end : nil
   )
 }
