@@ -180,7 +180,7 @@ extension Absence.Reason {
     case .conference:
       return ["👨‍🔬", "👨‍🏫", "🧠", "✍️"]
     case .school:
-      return ["🦉", "🎓", "😱", "🤯"]
+      return ["🦉", "🎓", "😱", "🤯", "🤦‍♂️"]
     }
   }
 }
