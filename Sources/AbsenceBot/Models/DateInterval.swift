@@ -42,9 +42,9 @@ extension DateInterval {
     }
   }
   
-  func dateRange(tz: TimeZone) -> String {
+  func dateRange(tz: TimeZone, bolded: Bool = true) -> String {
     return dates(tz: tz)
-      .map({"*\($0)*"})
+      .map({ bolded ? "*\($0)*" : $0})
       .joined(separator: " - ")
   }
 }

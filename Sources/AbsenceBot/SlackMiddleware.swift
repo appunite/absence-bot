@@ -11,11 +11,11 @@ let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, Response
     <<< decodeAbsenceMiddleware
     <<< filter(
       ^\.isAccepted,
-      or: sendRejectionMessagesMiddleware <| respond())
+      or: sendRejectionMessagesMiddleware <| respond(encoder: slackJsonEncoder))
     <<< fetchAcceptanceComponentsMiddleware
     <<< createCalendarEventMiddleware
     <<< sendAcceptanceMessagesMiddleware
-     <| respond()
+     <| respond(encoder: slackJsonEncoder)
 
 private func decodeAbsenceMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, Absence, Data>

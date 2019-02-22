@@ -77,6 +77,7 @@ public struct Slack {
       public private(set) var color: String?
       public private(set) var fallback: String?
       public private(set) var callbackId: String?
+      public private(set) var fields: [Field]?
       public private(set) var actions: [InteractiveAction]?
 
       enum CodingKeys: String, CodingKey {
@@ -88,6 +89,7 @@ public struct Slack {
         case color
         case footer
         case ts
+        case fields
       }
       
       public struct InteractiveAction: Codable, Equatable {
@@ -112,6 +114,12 @@ public struct Slack {
         public var isRejected: Bool {
           return !isAccepted
         }
+      }
+
+      public struct Field: Codable {
+        public private(set) var title: String?
+        public private(set) var value: String?
+        public private(set) var short: Bool?
       }
     }
   }
@@ -195,40 +203,28 @@ private func runSlack<A>(_ gitHubRequest: DecodableRequest<A>) -> EitherIO<Error
   return jsonDataTask(with: gitHubRequest.rawValue, decoder: slackJsonDecoder)
 }
 
-private let slackJsonDecoder = JSONDecoder()
+public let slackJsonDecoder = JSONDecoder()
   |> \.dateDecodingStrategy .~ .secondsSince1970
-private let slackJsonEncoder = JSONEncoder()
+public let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
 
 extension Slack.Message.Attachment {
   public static func text(text: String?) -> Slack.Message.Attachment {
-    return .init(title: nil, text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n ```\(imgeCompanyAddress)```", footer: nil, ts: nil, color: nil, fallback: nil, callbackId: nil, actions: nil)
-  }
-
-  public static func approvalRequest(text: String?, color: String?, fallback: String?, callback: String?, actions: [InteractiveAction]?) -> Slack.Message.Attachment {
-    return .init(title: "Approval Request", text: text, footer: "AppUnite API", ts: Date(), color: color, fallback: fallback, callbackId: callback, actions: actions)
+    return .init(title: nil, text: text, footer: nil, ts: Date(), color: nil, fallback: nil, callbackId: nil, fields: nil, actions: nil)
   }
 
   public static func acceptanceAttachement(absence: Absence) -> Slack.Message.Attachment {
-    let text = """
-    Your approval is requested here.
-    \(absence.announcementMessageText)
-    ✅ \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " You can check calendar event <\($0.absoluteString)|here>" } ?? "").
-    """
-
-    return .approvalRequest(text: text, color: absence.reason.colorHex, fallback: nil, callback: nil, actions: nil)
+    return .text(text: "\(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") approved this request.\(absence.event?.htmlLink.map { " Calendar event is <\($0.absoluteString)|here>" } ?? "").")
   }
 
   public static func rejectionAttachement(absence: Absence) -> Slack.Message.Attachment {
-    let text = """
-    Your approval is requested here.
-    \(absence.announcementMessageText)
-    🚫 \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") rejected this request.
-    """
-
-    return .approvalRequest(text: text, color: absence.reason.colorHex, fallback: nil, callback: nil, actions: nil)
+    return .text(text: "\(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown") rejected this request.")
   }
-  
+
+  public static func approvalRequestAttachement(absence: Absence, callback: String?, actions: [InteractiveAction]?) -> Slack.Message.Attachment {
+    return .init(title: "Approval Request", text: "Your approval is requested here. \(absence.announcementMessageText)", footer: nil, ts: nil, color: absence.reason.colorHex, fallback: "Absence acceptance interactive message", callbackId: callback, fields: [.reason(absence), .interval(absence)], actions: actions)
+  }
+
   public static func announcementAttachment(absence: Absence) -> Slack.Message.Attachment {
     let rawAbsence = absence
       |> \.requester .~ .left(absence.requesterId)
@@ -237,15 +233,27 @@ extension Slack.Message.Attachment {
       .encode(rawAbsence)
       .base64EncodedString()
 
-    return .approvalRequest(
-      text: "Your approval is requested here.\n\(absence.announcementMessageText)",
-      color: absence.reason.colorHex,
-      fallback: "Absence acceptance interactive message",
-      callback: payload,
-      actions: [
-        .init(name: "accept", type: "button", style: "primary", text: "Approve", value: .accept),
-        .init(name: "reject", type: "button", style: "danger", text: "Reject", value: .reject)]
-    )
+    return .approvalRequestAttachement(absence: absence, callback: payload, actions: [.accept(), .reject()])
+  }
+}
+
+extension Slack.Message.Attachment.InteractiveAction {
+  public static func accept() -> Slack.Message.Attachment.InteractiveAction {
+    return .init(name: "accept", type: "button", style: "primary", text: "Approve", value: .accept)
+  }
+  
+  public static func reject() -> Slack.Message.Attachment.InteractiveAction {
+    return .init(name: "reject", type: "button", style: "danger", text: "Reject", value: .reject)
+  }
+}
+
+extension Slack.Message.Attachment.Field {
+  public static func reason(_ absence: Absence) -> Slack.Message.Attachment.Field {
+    return .init(title: "Reason", value: "\(absence.reason.rawValue) \(absence.reason.emojis.first!)", short: true)
+  }
+  
+  public static func interval(_ absence: Absence) -> Slack.Message.Attachment.Field {
+    return .init(title: "Interval", value: absence.interval.dateRange(tz: Current.hqTimeZone(), bolded: false), short: true)
   }
 }
 

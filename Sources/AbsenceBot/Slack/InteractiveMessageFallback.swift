@@ -15,11 +15,11 @@ public struct InteractiveMessageFallback {
 }
 
 extension InteractiveMessageFallback {
-  public init(text: String?, attachment: Slack.Message.Attachment, responseType: String = "ephemeral", replaceOriginal: Bool = true) {
+  public init(text: String?, attachments: [Slack.Message.Attachment]) {
     self.text = text
-    self.attachments = [attachment]
-    self.responseType = responseType
-    self.replaceOriginal = replaceOriginal
+    self.attachments = attachments
+    self.responseType = "ephemeral"
+    self.replaceOriginal = true
   }
 }
 
@@ -29,14 +29,18 @@ extension InteractiveMessageFallback {
   public static func rejectionFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
       text: nil,
-      attachment: .rejectionAttachement(absence: absence)
+      attachments: [
+        .approvalRequestAttachement(absence: absence, callback: nil, actions: nil),
+        .rejectionAttachement(absence: absence)]
     )
   }
 
   public static func acceptanceFallback(absence: Absence) -> InteractiveMessageFallback {
     return .init(
       text: nil,
-      attachment: .acceptanceAttachement(absence: absence)
+      attachments: [
+        .approvalRequestAttachement(absence: absence, callback: nil, actions: nil),
+        .acceptanceAttachement(absence: absence)]
     )
   }
 }

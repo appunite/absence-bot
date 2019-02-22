@@ -119,21 +119,18 @@ private func endDateTime(from interval: DateInterval) -> GoogleCalendar.Event.Da
 
 extension Absence {
   public var announcementMessageText: String {
-    // get absence date range string
-    let interval = self.interval.dateRange(tz: Current.hqTimeZone())
-
     // generate text
     switch self.reason {
     case .illness:
-      return "<@\(self.requesterId)> _is not feeling good_ and is asking for vacant \(interval) \(self.reason.emojis.first!)"
+      return "<@\(self.requesterId)> _is not feeling good_ and is asking for vacant."
     case .holiday:
-      return "<@\(self.requesterId)> will be unavailable because of _holidays_ planned \(interval) \(self.reason.emojis.first!)"
+      return "<@\(self.requesterId)> will be unavailable because of _holidays_ planned"
     case .remote:
-      return "<@\(self.requesterId)> would love to _work from home_: \(interval) \(self.reason.emojis.first!)"
+      return "<@\(self.requesterId)> would love to _work from home_"
     case .conference:
-      return "<@\(self.requesterId)> will participate in _conference_: \(interval) \(self.reason.emojis.first!)"
+      return "<@\(self.requesterId)> will participate in _conference_"
     case .school:
-      return "<@\(self.requesterId)> will be less available because of _school_ duties: \(interval) \(self.reason.emojis.first!)"
+      return "<@\(self.requesterId)> will be less available because of _school_ duties"
     }
   }
 }
