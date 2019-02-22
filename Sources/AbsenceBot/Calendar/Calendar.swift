@@ -150,9 +150,9 @@ extension GoogleCalendar.Event.DateTime: Codable {
     var container = encoder
       .container(keyedBy: CodingKeys.self)
     let _date = self.date.map { dateFormatter.string(from: $0) }
-    let _dateTime = self.dateTime.map { dateFormatter.string(from: $0) }
+    let _dateTime = self.dateTime.map { dateTimeFormatter.string(from: $0) }
     try container.encodeIfPresent(_date, forKey: .date)
-    try container.encode(_dateTime, forKey: .dateTime)
+    try container.encodeIfPresent(_dateTime, forKey: .dateTime)
   }
 }
 
