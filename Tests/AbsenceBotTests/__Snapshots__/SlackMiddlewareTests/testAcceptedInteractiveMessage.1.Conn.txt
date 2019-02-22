@@ -5,7 +5,7 @@ X-Slack-Signature: v0=32b5b0282d786b15cfb9ac68cca5de6bff4cac10839aa095575c610bab
 payload=%7B%22callback_id%22:%22eyJzdGF0dXMiOjAsImludGVydmFsIjp7InN0YXJ0Ijo1NjgwMzY4MDAsImVuZCI6NTY4MTIzMjAwfSwicmVxdWVzdGVyIjoiSkFLS09XIiwicmVhc29uIjoiaG9saWRheSIsImNoYW5uZWwiOiJERE5HSjJTTEUifQ%3D%3D%22,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22actions%22:%5B%7B%22name%22:%22accept%22,%22type%22:%22button%22,%22value%22:%22accept%22%7D%5D,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
 
 200 OK
-Content-Length: 481
+Content-Length: 644
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -14,4 +14,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-{"replace_original":true,"attachments":[{"title":"Approval Request","text":"Your approval is requested here.\n<@U456V5Q4E> will be unavailable because of _holidays_ planned *January 1, 2019* - *January 2, 2019* 🏖\n✅ <@U456V5Q4E> approved this request. You can check calendar event <https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc|here>.","color":"#439bdf"}],"response_type":"ephemeral"}
+{"replace_original":true,"attachments":[{"color":"#439bdf","fallback":"Absence acceptance interactive message","title":"Approval Request","fields":[{"title":"Reason","value":"holiday 🏖","short":true},{"title":"Interval","value":"January 1, 2019 - January 2, 2019","short":true}],"text":"Your approval is requested here. <@U456V5Q4E> will be unavailable because of _holidays_ planned"},{"text":"<@U456V5Q4E> approved this request. Calendar event is <https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc|here>.","ts":1546344000}],"response_type":"ephemeral"}

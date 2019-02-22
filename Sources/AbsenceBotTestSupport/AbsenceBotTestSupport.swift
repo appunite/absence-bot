@@ -211,10 +211,13 @@ extension Slack.Message.Attachment {
   public static let mock = Slack.Message.Attachment(
     title: "some title",
     text: "some text",
+    footer: "footer",
+    ts: .mock,
     color: "#123456",
     fallback: "fallback",
     callbackId: "1",
-    actions: nil)
+    fields: [.mock],
+    actions: [.mock])
 }
 
 extension Slack.Message.Attachment.InteractiveAction {
@@ -233,6 +236,10 @@ extension Slack.Message.Attachment.InteractiveAction {
   public static let reject = mock
     |> \.name .~ "reject"
     |> \.value .~ .reject
+}
+
+extension Slack.Message.Attachment.Field {
+  public static let mock = Slack.Message.Attachment.Field(title: "title", value: "value", short: true)
 }
 
 extension Slack.SlackError {

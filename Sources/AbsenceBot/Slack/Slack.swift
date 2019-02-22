@@ -210,7 +210,7 @@ public let slackJsonEncoder = JSONEncoder()
 
 extension Slack.Message.Attachment {
   public static func text(text: String?) -> Slack.Message.Attachment {
-    return .init(title: nil, text: text, footer: nil, ts: Date(), color: nil, fallback: nil, callbackId: nil, fields: nil, actions: nil)
+    return .init(title: nil, text: text, footer: nil, ts: Current.date(), color: nil, fallback: nil, callbackId: nil, fields: nil, actions: nil)
   }
 
   public static func acceptanceAttachement(absence: Absence) -> Slack.Message.Attachment {
