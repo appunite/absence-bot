@@ -13,6 +13,9 @@ public func jsonDataTask<A>(with request: URLRequest, decoder: JSONDecoder? = ni
   -> EitherIO<Error, A>
   where A: Decodable {
     
+    // Log cURL 
+    Current.logger.info(request.cURL)
+
     return dataTask(with: request)
       .map(first)
       .flatMap { data in

@@ -9,12 +9,16 @@ public struct GoogleCalendar {
   /// Fetches Google OAuth access token
   public var fetchAuthToken: () -> EitherIO<Error, Either<OAuthError, AccessToken>>
 
-  /// Create
+  /// Create calendar event
   public var createEvent: (AccessToken, Event) -> EitherIO<Error, Event>
 
+  /// Get calendar events
+  public var fetchEvents: (AccessToken, DateInterval) -> EitherIO<Error, EventsEnvelope>
+
   static let live = GoogleCalendar(
-    fetchAuthToken: { AbsenceBot.fetchAuthToken() |> runCalendar} ,
-    createEvent: { AbsenceBot.createEvent(with: $0, event: $1) |> runCalendar }
+    fetchAuthToken: { AbsenceBot.fetchAuthToken() |> runCalendar},
+    createEvent: { AbsenceBot.createEvent(with: $0, event: $1) |> runCalendar },
+    fetchEvents: { AbsenceBot.fetchEvents(with: $0, period: $1) |> runCalendar }
   )
 
   public struct AccessToken: Codable {
@@ -41,6 +45,17 @@ public struct GoogleCalendar {
       case description = "error_description"
       case error
     }
+  }
+
+  public struct EventsEnvelope: Codable, Equatable {
+    public private(set) var token: String?
+    public private(set) var events: [Event]
+    
+    public enum CodingKeys: String, CodingKey {
+      case token = "nextSyncToken"
+      case events = "items"
+    }
+
   }
 
   // docs: https://developers.google.com/calendar/v3/reference/events/insert
@@ -114,6 +129,24 @@ func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.E
     rawValue: URLRequest(url: URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(Current.envVars.google.calendar)/events")!)
       |> \.httpMethod .~ "POST"
       |> \.httpBody .~ body
+      |> \.allHTTPHeaderFields .~ [
+        "Authorization": "Bearer \(token.accessToken)",
+        "Content-type": "application/json"
+    ]
+  )
+}
+
+func fetchEvents(with token: GoogleCalendar.AccessToken, period: DateInterval) -> DecodableRequest<GoogleCalendar.EventsEnvelope> {
+  let bodyParts = [
+    "timeMin": dateTimeFormatter.string(from: period.start),
+    "timeMax": dateTimeFormatter.string(from: period.end),
+    "maxResults": "2500",
+    "fields": "items(attendees(displayName,email),created,description,end,id,start,summary,updated),nextPageToken,nextSyncToken"
+  ]
+
+  return DecodableRequest(
+    rawValue: URLRequest(url: URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(Current.envVars.google.calendar)/events?\(urlFormEncode(value: bodyParts))")!)
+      |> \.httpMethod .~ "GET"
       |> \.allHTTPHeaderFields .~ [
         "Authorization": "Bearer \(token.accessToken)",
         "Content-type": "application/json"

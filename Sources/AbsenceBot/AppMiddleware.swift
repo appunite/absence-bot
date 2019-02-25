@@ -42,7 +42,9 @@ private func render(conn: Conn<StatusLineOpen, Route>)
       return conn.map(const(message))
         |> slackInteractiveMessageActionMiddleware
     case let .report(year, month):
-      fatalError()
+      let filter = zip(with: { ReportFilter.init(year: $0, mont: $1) } ) (year, month)
+      return conn.map(const(filter!))
+        |> reportMiddleware
     }
 }
 
