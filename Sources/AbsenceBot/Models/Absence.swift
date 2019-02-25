@@ -111,8 +111,14 @@ private func startDateTime(from interval: DateInterval) -> GoogleCalendar.Event.
 }
 
 private func endDateTime(from interval: DateInterval) -> GoogleCalendar.Event.DateTime {
+  // if we're adding all day event, google is exluding end date, so we need to extend by one day
+  let calendar = Calendar.gmtTimeZoneCalendar
+  let nextDay = { date in
+    return calendar.date(byAdding: .day, value: 1, to: date)
+  }
+
   return .init(
-    date: interval.isAllDay ? interval.end : nil,
+    date: interval.isAllDay ? nextDay(interval.end) : nil,
     dateTime: !interval.isAllDay ? interval.end : nil
   )
 }
