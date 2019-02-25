@@ -206,11 +206,11 @@ public extension URLRequest {
     var curlCommand = "curl --verbose \\\n"
     
     // URL
-    curlCommand = curlCommand.appendingFormat("\t '%@' \\\n", url.absoluteString)
+    curlCommand = curlCommand.appending("\t '\(url.absoluteString)' \\\n")
     
     // Method if different from GET
     if "GET" != httpMethod {
-      curlCommand = curlCommand.appendingFormat("\t -X %@ \\\n", httpMethod)
+      curlCommand = curlCommand.appending("\t -X \(httpMethod) \\\n")
     }
     
     // Headers
@@ -218,14 +218,14 @@ public extension URLRequest {
     let allHeadersKeys = Array(allHeadersFields.keys)
     let sortedHeadersKeys  = allHeadersKeys.sorted(by: <)
     for key in sortedHeadersKeys {
-      curlCommand = curlCommand.appendingFormat("\t -H '%@: %@' \\\n", key, self.value(forHTTPHeaderField: key)!)
+      curlCommand = curlCommand.appending("\t -H '\(key): \(self.value(forHTTPHeaderField: key)!)' \\\n")
     }
     
     // HTTP body
     if let httpBody = httpBody, httpBody.count > 0 {
       let httpBodyString = String(data: httpBody, encoding: String.Encoding.utf8)!
       let escapedHttpBody = URLRequest.escapeAllSingleQuotes(httpBodyString)
-      curlCommand = curlCommand.appendingFormat("\t --data '%@' \\\n", escapedHttpBody)
+      curlCommand = curlCommand.appending("\t --data '\(escapedHttpBody)' \\\n")
     }
     
     return curlCommand
