@@ -45,3 +45,19 @@ import Prelude
           })
       }
 
+
+
+      extension PartialIso where A == (
+            Int?
+          , 
+            Int?
+        ), B == Route {
+
+          public static let report = parenthesize <| PartialIso(
+            apply: Route.report,
+            unapply: {
+              guard case let .report(result) = $0 else { return nil }
+              return .some(result)
+          })
+      }
+
