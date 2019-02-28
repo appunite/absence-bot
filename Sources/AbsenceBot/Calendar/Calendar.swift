@@ -138,8 +138,8 @@ func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.E
 
 func fetchEvents(with token: GoogleCalendar.AccessToken, period: DateInterval) -> DecodableRequest<GoogleCalendar.EventsEnvelope> {
   let bodyParts = [
-    "timeMin": dateTimeFormatterA.string(from: period.start),
-    "timeMax": dateTimeFormatterA.string(from: period.end),
+    "timeMin": dateTimeFormatter.string(from: period.start),
+    "timeMax": dateTimeFormatter.string(from: period.end),
     "maxResults": "2500",
     "fields": "items(attendees(displayName,email),created,description,end,id,start,summary,updated),nextPageToken,nextSyncToken"
   ]
@@ -176,14 +176,14 @@ extension GoogleCalendar.Event.DateTime: Codable {
     let _date = try container.decodeIfPresent(String.self, forKey: .date)
     let _dateTime = try container.decodeIfPresent(String.self, forKey: .dateTime)
     self.date = _date.flatMap { dateFormatter.date(from: $0) }
-    self.dateTime = _dateTime.flatMap { dateTimeFormatterB.date(from: $0) }
+    self.dateTime = _dateTime.flatMap { intervalDateTimeFormatter.date(from: $0) }
   }
   
   public func encode(to encoder: Encoder) throws {
     var container = encoder
       .container(keyedBy: CodingKeys.self)
     let _date = self.date.map { dateFormatter.string(from: $0) }
-    let _dateTime = self.dateTime.map { dateTimeFormatterA.string(from: $0) }
+    let _dateTime = self.dateTime.map { intervalDateTimeFormatter.string(from: $0) }
     try container.encodeIfPresent(_date, forKey: .date)
     try container.encodeIfPresent(_dateTime, forKey: .dateTime)
   }
@@ -198,14 +198,13 @@ private let dateFormatter = DateFormatter()
   |> iso8601
   |> \.dateFormat .~ "yyyy-MM-dd"
 
-private let dateTimeFormatterA = DateFormatter()
+private let dateTimeFormatter = DateFormatter()
   |> iso8601
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
-private let dateTimeFormatterB = DateFormatter()
+private let intervalDateTimeFormatter = DateFormatter()
   |> iso8601
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZ"
 
 private let calendarJsonDecoder = JSONDecoder()
-  |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatterA)
-
+  |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatter)
