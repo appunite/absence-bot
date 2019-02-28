@@ -48,9 +48,9 @@ import Prelude
 
 
       extension PartialIso where A == (
-            Int?
+            Int
           , 
-            Int?
+            Int
         ), B == Route {
 
           public static let report = parenthesize <| PartialIso(

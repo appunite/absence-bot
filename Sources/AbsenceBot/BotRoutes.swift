@@ -9,7 +9,7 @@ public enum Route: DerivePartialIsos, Equatable {
   case hello
   case slack(InteractiveMessageAction)
   case dialogflow(Webhook)
-  case report(year: Int?, month: Int?)
+  case report(year: Int, month: Int)
 }
 
 private let routers: [Router<Route>] = [
@@ -17,11 +17,9 @@ private let routers: [Router<Route>] = [
   .hello
     <¢> get %> lit("hello") <% end,
 
-  // Matches: GET /report?year=:optional_int,month=:optional_int,
+  // Matches: GET /report/:year/:month
   .report
-    <¢> get %> lit("report")
-      %> queryParam("year", opt(.int)) <%> queryParam("month", opt(.int))
-      <% end,
+    <¢> get %> lit("report") %> pathParam(.int) <%> pathParam(.int) <% end,
 
   // Matches: POST /slack
   .slack

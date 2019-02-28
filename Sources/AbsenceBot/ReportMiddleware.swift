@@ -6,20 +6,54 @@ import Optics
 import Prelude
 import Tuple
 
-struct ReportFilter {
-  let year: Int
-  let mont: Int
+public struct ReportFilter {
+  public private(set) var year: Int
+  public private(set) var month: Int
+//  public private(set) var reason: Set<Absence.Reason>?
 }
+
+extension ReportFilter: Codable, Equatable {}
 
 let reportMiddleware: Middleware<StatusLineOpen, ResponseEnded, ReportFilter, Data> =
   fetchEventsMiddleware
+    >>> fetchGoogleTokenMiddleware
     >>> basicAuth(
       user: Current.envVars.basicAuth.username,
       password: Current.envVars.basicAuth.password)
-    <| respond(.ok, encoder: dialogflowJsonEncoder)
+    <| respond(.ok, encoder: reportJsonEncoder)
 
 private func fetchEventsMiddleware(
-  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, GoogleCalendar.EventsEnvelope, Data>
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, [ReportResult], Data>
+  ) -> Middleware<StatusLineOpen, ResponseEnded, T2<ReportFilter, GoogleCalendar.AccessToken>, Data> {
+  
+  return { conn in
+    let (filter, token) = (get1(conn.data), rest(conn.data))
+
+    guard let dateInterval = DateInterval(year: filter.year, month: filter.month)
+      else { return conn |> unprocessableEntityError(respond(text: "Missing or invalid params.")) }
+
+    return Current.calendar.fetchEvents(token, dateInterval)
+      .run
+      .flatMap { errorOrEvent in
+        switch errorOrEvent {
+        case let .left(e):
+          return conn
+            |> internalServerError(respond(text: e.localizedDescription))
+        case let .right(envelope):
+          let predicate: Set<Absence.Reason> = /*filter.reason ?? */[.illness, .holiday, .conference]
+          let events = envelope.events
+            .map(ReportResult.init)
+            .filter { predicate.contains($0.reason!) }
+          
+          return conn.map(const(events))
+            |> middleware
+        }
+    }
+  }
+}
+
+private func fetchGoogleTokenMiddleware(
+  _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, T2<ReportFilter, GoogleCalendar.AccessToken>, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, ReportFilter, Data> {
   
   return { conn in
@@ -28,26 +62,24 @@ private func fetchEventsMiddleware(
       .flatMap { errorOrToken in
         switch errorOrToken {
         case let .right(.right(token)):
-          let dateInterval = DateInterval(
-            start: .init(timeIntervalSince1970: 1548979200),
-            end: .init(timeIntervalSince1970: 1551398399)
-          )
-
-          return Current.calendar.fetchEvents(token, dateInterval)
-            .run
-            .flatMap { errorOrEvent in
-              switch errorOrEvent {
-              case let .left(e):
-                return conn
-                  |> internalServerError(respond(text: e.localizedDescription))
-              case let .right(envelope):
-                return conn.map(const(envelope))
-                  |> middleware
-              }
-          }
+          return conn.map(const(conn.data .*. token))
+            |> middleware
         default:
-          fatalError()
+          return conn |> unprocessableEntityError(respond(text: "Can't fetch google token."))
         }
     }
   }
 }
+
+private let reportJsonEncoder: JSONEncoder = { () in
+  let encoder = JSONEncoder()
+  
+  if #available(OSX 10.12, *) {
+    encoder.dateEncodingStrategy = .iso8601
+  } else {
+    fatalError()
+  }
+  
+  return encoder
+}()
+

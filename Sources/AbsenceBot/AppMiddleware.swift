@@ -41,9 +41,8 @@ private func render(conn: Conn<StatusLineOpen, Route>)
     case .slack(let message):
       return conn.map(const(message))
         |> slackInteractiveMessageActionMiddleware
-    case let .report(year, month):
-      let filter = zip(with: { ReportFilter.init(year: $0, mont: $1) } ) (year, month)
-      return conn.map(const(filter!))
+    case .report(let year, let month):
+      return conn.map(const(.init(year: year, month: month)))
         |> reportMiddleware
     }
 }
