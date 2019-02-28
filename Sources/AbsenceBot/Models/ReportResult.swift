@@ -42,9 +42,9 @@ public struct ReportResult: Encodable {
       .first?
       .trimmingCharacters(in: .whitespacesAndNewlines)
     
-    self.reviewer = event.attendees
+    self.reviewer = event.attendees?
       .filter { $0.email != self.requester }
       .first
-      .flatMap(^\.displayName)
+      .flatMap(^\.displayName) ?? "<unknown>"
   }
 }
