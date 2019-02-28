@@ -75,7 +75,7 @@ private let reportJsonEncoder: JSONEncoder = { () in
   let encoder = JSONEncoder()
   
   if #available(OSX 10.12, *) {
-    encoder.dateEncodingStrategy = .iso8601
+    encoder.dateEncodingStrategy = .formatted(dateFormatter)
   } else {
     fatalError()
   }
@@ -83,3 +83,8 @@ private let reportJsonEncoder: JSONEncoder = { () in
   return encoder
 }()
 
+private let dateFormatter = DateFormatter()
+  |> \.locale .~ Locale(identifier: "en_US_POSIX")
+  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.calendar .~ Calendar(identifier: .iso8601)
+  |> \.dateFormat .~ "dd.MM.yyyy HH:mm"

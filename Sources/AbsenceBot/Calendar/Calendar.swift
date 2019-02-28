@@ -138,8 +138,8 @@ func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.E
 
 func fetchEvents(with token: GoogleCalendar.AccessToken, period: DateInterval) -> DecodableRequest<GoogleCalendar.EventsEnvelope> {
   let bodyParts = [
-    "timeMin": dateTimeFormatter.string(from: period.start),
-    "timeMax": dateTimeFormatter.string(from: period.end),
+    "timeMin": dateTimeFormatterA.string(from: period.start),
+    "timeMax": dateTimeFormatterA.string(from: period.end),
     "maxResults": "2500",
     "fields": "items(attendees(displayName,email),created,description,end,id,start,summary,updated),nextPageToken,nextSyncToken"
   ]
@@ -173,34 +173,39 @@ extension GoogleCalendar.OAuthPayload: Claims {
 extension GoogleCalendar.Event.DateTime: Codable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let _date = try container.decodeIfPresent(String.self, forKey: CodingKeys.date)
+    let _date = try container.decodeIfPresent(String.self, forKey: .date)
     let _dateTime = try container.decodeIfPresent(String.self, forKey: .dateTime)
     self.date = _date.flatMap { dateFormatter.date(from: $0) }
-    self.dateTime = _dateTime.flatMap { dateTimeFormatter.date(from: $0) }
+    self.dateTime = _dateTime.flatMap { dateTimeFormatterB.date(from: $0) }
   }
   
   public func encode(to encoder: Encoder) throws {
     var container = encoder
       .container(keyedBy: CodingKeys.self)
     let _date = self.date.map { dateFormatter.string(from: $0) }
-    let _dateTime = self.dateTime.map { dateTimeFormatter.string(from: $0) }
+    let _dateTime = self.dateTime.map { dateTimeFormatterA.string(from: $0) }
     try container.encodeIfPresent(_date, forKey: .date)
     try container.encodeIfPresent(_dateTime, forKey: .dateTime)
   }
 }
 
+private let iso8601 = ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
+  >>> ((\DateFormatter.locale) .~ Locale(identifier: "en_US_POSIX"))
+  >>> ((\DateFormatter.timeZone) .~ Current.hqTimeZone())
+  >>> ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
+
 private let dateFormatter = DateFormatter()
-  |> \.locale .~ Locale(identifier: "en_US_POSIX")
-  |> \.timeZone .~ Current.hqTimeZone()
-  |> \.calendar .~ Calendar(identifier: .iso8601)
+  |> iso8601
   |> \.dateFormat .~ "yyyy-MM-dd"
 
-private let dateTimeFormatter = DateFormatter()
-  |> \.locale .~ Locale(identifier: "en_US_POSIX")
-  |> \.timeZone .~ Current.hqTimeZone()
-  |> \.calendar .~ Calendar(identifier: .iso8601)
+private let dateTimeFormatterA = DateFormatter()
+  |> iso8601
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
+private let dateTimeFormatterB = DateFormatter()
+  |> iso8601
+  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZ"
+
 private let calendarJsonDecoder = JSONDecoder()
-  |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatter)
+  |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatterA)
 
