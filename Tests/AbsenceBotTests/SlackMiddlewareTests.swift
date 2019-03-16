@@ -36,21 +36,18 @@ class SlackTests: TestCase {
     let action = InteractiveMessageAction.accept
     update(
       &Current,
-      \.calendar .~ GoogleCalendar(
-        fetchAuthToken: { pure(pure(.mock)) },
-        createEvent: { _, event in
-          // calculate time interval between end dates
-          let endInterval = zip(with: {$0.timeIntervalSince1970 - $1.timeIntervalSince1970})(
-            event.end.date, action.absence?.interval.end)
-
-          // start day need to equal
-          XCTAssertEqual(event.start.date, action.absence?.interval.start)
-          
-          // end date must be extended by one day
-          XCTAssertEqual(endInterval, 86_400)
-          return pure(.mock)
-        }
-      )
+      \.calendar.createEvent .~ { _, event in
+        // calculate time interval between end dates
+        let endInterval = zip(with: {$0.timeIntervalSince1970 - $1.timeIntervalSince1970})(
+          event.end.date, action.absence?.interval.end)
+        
+        // start day need to equal
+        XCTAssertEqual(event.start.date, action.absence?.interval.start)
+        
+        // end date must be extended by one day
+        XCTAssertEqual(endInterval, 86_400)
+        return pure(.mock)
+      }
     )
 
     let webhook = request(to: .slack(action)) |> signRequest
