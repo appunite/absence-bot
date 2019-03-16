@@ -11,27 +11,54 @@ import AbsenceBotTestSupport
 class SlackTests: TestCase {
   override func setUp() {
     super.setUp()
+    Current = .mock
 //    record = true
   }
   
   func testAcceptedInteractiveMessage() {
-    Current = .mock
-    
     let webhook = request(to: .slack(.accept)) |> signRequest
     let conn = connection(from: webhook)
     
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
 
+  func testAcceptedNotificationMessage() {
+    update(
+      &Current,
+      \.slack.postMessage .~ { message in
+        assertSnapshot(matching: message, as: .dump)
+        return pure(pure(.mock))
+      }
+    )
+
+    let webhook = request(to: .slack(.accept)) |> signRequest
+    let conn = connection(from: webhook)
+
+    _ = appMiddleware(conn).perform()
+  }
+
   func testRejectedInteractiveMessage() {
-    Current = .mock
-    
     let webhook = request(to: .slack(.reject)) |> signRequest
     let conn = connection(from: webhook)
     
     assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
   }
-  
+
+  func testRejectedNotificationMessage() {
+    update(
+      &Current,
+      \.slack.postMessage .~ { message in
+        assertSnapshot(matching: message, as: .dump)
+        return pure(pure(.mock))
+      }
+    )
+
+    let webhook = request(to: .slack(.reject)) |> signRequest
+    let conn = connection(from: webhook)
+    
+    _ = appMiddleware(conn).perform()
+  }
+
   func testGoogleCalendarEventRange() {
     let action = InteractiveMessageAction.accept
     update(
@@ -53,8 +80,7 @@ class SlackTests: TestCase {
     let webhook = request(to: .slack(action)) |> signRequest
     let conn = connection(from: webhook)
     
-    _ = appMiddleware(conn)
-      .perform()
+    _ = appMiddleware(conn).perform()
   }
 }
 

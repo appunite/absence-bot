@@ -1,0 +1,6 @@
+▿ Message
+  - attachments: 0 elements
+  ▿ channel: DDNGJ2SLE
+    - rawValue: "DDNGJ2SLE"
+  ▿ text: Optional<String>
+    - some: "Bad news! Your absence request was rejected by <@U456V5Q4E>"

@@ -267,12 +267,12 @@ extension Slack.Message {
   }
   
   public static func rejectionNotificationMessage(absence: Absence) -> Slack.Message {
-    return Slack.Message(text: "Bad news! Your absence request was rejected", channel: absence.channel, attachments: [])
+    return Slack.Message(text: "Bad news! Your absence request was rejected by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown")", channel: absence.channel, attachments: [])
   }
   
   public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
     // create generic message
-    let message = Slack.Message(text: "Good news! Your absence request was approved. I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.channel, attachments: [])
+    let message = Slack.Message(text: "Good news! Your absence request was approved by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown"). I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.channel, attachments: [])
 
     // extend message with attachment if illnes
     switch absence.reason {
