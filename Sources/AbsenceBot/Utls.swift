@@ -156,28 +156,16 @@ extension Date {
   }
   
   internal func dateByReplacingTimeZone(timeZone: TimeZone) -> Date? {
-//    let calendar = Calendar.gmtTimeZoneCalendar
-//
-//    // get dates components
-//    let dateComponentsA = calendar.dateComponents(
-//      [.year, .month, .day, .hour, .minute, .second], from: self)
-//
-//    // create combined date components
-//    let dateComponentsB = DateComponents(
-//      calendar: calendar,
-//      timeZone: timeZone,
-//      year: dateComponentsA.year,
-//      month: dateComponentsA.month,
-//      day: dateComponentsA.day,
-//      hour: dateComponentsA.hour,
-//      minute: dateComponentsA.minute,
-//      second: dateComponentsA.second
-//    )
-//
-//    // return new date
-//    return calendar.date(from: dateComponentsB)
-    
-    return self.addingTimeInterval(TimeInterval(-timeZone.secondsFromGMT()))
+    var calendar = Calendar.gmtTimeZoneCalendar
+
+    // get dates components
+    let dateComponents = calendar.dateComponents(
+      [.year, .month, .day, .hour, .minute, .second], from: self)
+
+    // change time zone
+    calendar.timeZone = timeZone
+
+    return calendar.date(from: dateComponents)
   }
 }
 
