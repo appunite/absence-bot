@@ -3,6 +3,8 @@ import Optics
 import Prelude
 
 public struct ReportResult: Encodable {
+  public var id: String?
+
   /// Defines who is requesting for absence
   public var requester: String?
   public var reviewer: String?
@@ -22,6 +24,7 @@ public struct ReportResult: Encodable {
   public var updatedAt: Date?
   
   init(event: GoogleCalendar.Event) {
+    self.id = event.id
     self.eventLink = event.htmlLink
     self.createAt = event.created
     self.updatedAt = event.updated
@@ -42,13 +45,9 @@ public struct ReportResult: Encodable {
     }
 
     self.reason = event.summary
-      .split(separator: "-")
-      .last?
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-      .components(separatedBy: .whitespacesAndNewlines)
-      .first
+      .firstRegexMatch(pattern: "(?<=-.)(\\w+)")
       .flatMap(Absence.Reason.init)
-    
+
     self.requester = event.summary
       .split(separator: "-")
       .first?
@@ -58,5 +57,14 @@ public struct ReportResult: Encodable {
       .filter { $0.email != self.requester }
       .first
       .flatMap(^\.displayName) ?? "<unknown>"
+  }
+}
+
+extension String {
+  internal func firstRegexMatch(pattern: String) -> String? {
+    let regex = try? NSRegularExpression(pattern: pattern)
+    return regex?.firstMatch(in: self, range: NSRange(self.startIndex..., in: self))
+      .flatMap { Range($0.range, in: self) }
+      .map { String(self[$0]) }
   }
 }
