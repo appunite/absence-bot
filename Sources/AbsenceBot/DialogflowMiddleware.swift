@@ -78,12 +78,6 @@ private func fulfillmentMiddleware(
       guard let interval = dateInterval(parameters: followupContext.parameters, tz: user.tz)
         else { return middleware <| conn.map(const(.missingInterval .*. nil)) }
 
-      Current.logger.info("REASON: \(reason)")
-      Current.logger.info("INTERVAL: \(interval)")
-      Current.logger.info("USERS_TIMEZONE: \(user.tz)")
-      Current.logger.info("HQ_TIMEZONE: \(Current.hqTimeZone())")
-      Current.logger.info("CURRENT_TIMEZONE: \(TimeZone.current)")
-
       if case .accept = payload.action {
         // we're done, send thanks comment and clear out contextes
         let fulfillment = Fulfillment.compliments(contexts: [
