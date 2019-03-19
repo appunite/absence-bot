@@ -17,9 +17,9 @@ extension ReportFilter: Codable, Equatable {}
 let reportMiddleware: Middleware<StatusLineOpen, ResponseEnded, ReportFilter, Data> =
   fetchEventsMiddleware
     >>> fetchGoogleTokenMiddleware
-//    >>> basicAuth(
-//      user: Current.envVars.basicAuth.username,
-//      password: Current.envVars.basicAuth.password)
+    >>> basicAuth(
+      user: Current.envVars.basicAuth.username,
+      password: Current.envVars.basicAuth.password)
     <| respond(.ok, encoder: reportJsonEncoder)
 
 private func fetchEventsMiddleware(
