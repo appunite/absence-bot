@@ -35,7 +35,8 @@ extension EnvVars {
 extension GoogleCalendar {
   public static let mock = GoogleCalendar(
     fetchAuthToken: { pure(pure(.mock)) },
-    createEvent: { _, _ in pure(.mock) }
+    createEvent: { _, _ in pure(.mock) },
+    fetchEvents: { _, _ in pure(.mock) }
   )
 }
 
@@ -80,6 +81,13 @@ extension GoogleCalendar.Event.DateTime {
   public static let mock = GoogleCalendar.Event.DateTime(
     date: Date(timeIntervalSince1970: 1546344000),
     dateTime: nil
+  )
+}
+
+extension GoogleCalendar.EventsEnvelope {
+  public static let mock = GoogleCalendar.EventsEnvelope(
+    token: "token",
+    events: [.mock]
   )
 }
 

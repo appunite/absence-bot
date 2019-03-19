@@ -66,6 +66,7 @@ extension DateInterval {
 
 private let daysRangeFormatter: (TimeZone) -> DateFormatter = { timeZone in
   return DateFormatter()
+    |> \.calendar .~ Calendar.gmtTimeZoneCalendar
     |> \.locale .~ Locale(identifier: "en_US_POSIX")
     |> \.timeZone .~ timeZone
     |> \.dateStyle .~ .long
@@ -74,6 +75,7 @@ private let daysRangeFormatter: (TimeZone) -> DateFormatter = { timeZone in
 
 private let dateTimeRangeFormatter: (TimeZone) -> DateFormatter = { timeZone in
   return DateFormatter()
+    |> \.calendar .~ Calendar.gmtTimeZoneCalendar
     |> \.locale .~ Locale(identifier: "en_US_POSIX")
     |> \.timeZone .~ timeZone
     |> \.dateStyle .~ .long

@@ -1,4 +1,6 @@
 import Foundation
+import Optics
+import Prelude
 
 public struct Webhook: Equatable {
   public private(set) var session: URL
@@ -94,26 +96,12 @@ extension Webhook: Codable {
   }
 }
 
-public let dialogflowJsonDecoder: JSONDecoder = { () in
-  let decoder = JSONDecoder()
-  
-  if #available(OSX 10.12, *) {
-    decoder.dateDecodingStrategy = .iso8601
-  } else {
-    fatalError()
-  }
-  
-  return decoder
-}()
+private let dialogflowDateFormatter = DateFormatter()
+  |> iso8601
+  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssxxxxx"
 
-public let dialogflowJsonEncoder: JSONEncoder = { () in
-  let encoder = JSONEncoder()
-  
-  if #available(OSX 10.12, *) {
-    encoder.dateEncodingStrategy = .iso8601
-  } else {
-    fatalError()
-  }
-  
-  return encoder
-}()
+public let dialogflowJsonDecoder = JSONDecoder()
+  |> \.dateDecodingStrategy .~ .formatted(dialogflowDateFormatter)
+
+public let dialogflowJsonEncoder = JSONEncoder()
+  |> \.dateEncodingStrategy .~ .formatted(dialogflowDateFormatter)

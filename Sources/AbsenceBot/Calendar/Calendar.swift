@@ -189,21 +189,19 @@ extension GoogleCalendar.Event.DateTime: Codable {
   }
 }
 
-private let iso8601 = ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
-  >>> ((\DateFormatter.locale) .~ Locale(identifier: "en_US_POSIX"))
-  >>> ((\DateFormatter.timeZone) .~ Current.hqTimeZone())
-  >>> ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
-
 private let dateFormatter = DateFormatter()
   |> iso8601
+  |> \.timeZone .~ Current.hqTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd"
 
 private let dateTimeFormatter = DateFormatter()
   |> iso8601
+  |> \.timeZone .~ Current.hqTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
 private let intervalDateTimeFormatter = DateFormatter()
   |> iso8601
+  |> \.timeZone .~ Current.hqTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZ"
 
 private let calendarJsonDecoder = JSONDecoder()

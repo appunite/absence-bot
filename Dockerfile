@@ -11,6 +11,5 @@ COPY Package.swift ./
 COPY Sources ./Sources
 COPY Tests ./Tests
 
-RUN swift package update
 RUN swift build --product Server --configuration release
 CMD .build/release/Server
