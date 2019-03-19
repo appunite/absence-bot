@@ -157,16 +157,15 @@ extension GoogleCalendar.Event.DateTime: Codable {
 }
 
 private let dateFormatter = DateFormatter()
-  |> \.locale .~ Locale(identifier: "en_US_POSIX")
+  |> iso8601
   |> \.timeZone .~ Current.hqTimeZone()
-  |> \.calendar .~ Calendar(identifier: .iso8601)
   |> \.dateFormat .~ "yyyy-MM-dd"
 
 private let dateTimeFormatter = DateFormatter()
-  |> \.locale .~ Locale(identifier: "en_US_POSIX")
+  |> iso8601
   |> \.timeZone .~ Current.hqTimeZone()
-  |> \.calendar .~ Calendar(identifier: .iso8601)
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+
 
 private let calendarJsonDecoder = JSONDecoder()
   |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatter)

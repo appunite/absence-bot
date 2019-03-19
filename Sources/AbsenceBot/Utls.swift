@@ -104,6 +104,12 @@ extension Calendar {
     |> \.timeZone .~ TimeZone(secondsFromGMT: 0)!
 }
 
+// DateFormatter
+
+public let iso8601 = ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601))
+  >>> ((\DateFormatter.locale) .~ Locale(identifier: "en_US_POSIX"))
+  >>> ((\DateFormatter.timeZone) .~ TimeZone(abbreviation: "GMT"))
+
 // Date
 
 extension Date {
