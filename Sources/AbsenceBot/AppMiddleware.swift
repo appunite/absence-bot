@@ -8,7 +8,7 @@ import Tuple
 import Html
 
 public let appMiddleware: Middleware<StatusLineOpen, ResponseEnded, Prelude.Unit, Data> =
-  requestLogger { Current.logger.info($0) }
+  requestLogger (logger: { Current.logger.info($0) }, uuid: { Current.uuid() })
     <<< responseTimeout(25)
 //    <<< requireHttps(allowedInsecureHosts: allowedInsecureHosts)
 //    <<< redirectUnrelatedHosts(isAllowedHost: { isAllowed(host: $0) }, canonicalHost: canonicalHost)
