@@ -24,7 +24,9 @@ extension EnvVarTests {
 extension SlackTests {
   static var allTests: [(String, (SlackTests) -> () throws -> Void)] = [
     ("testAcceptedInteractiveMessage", testAcceptedInteractiveMessage),
+    ("testAcceptedNotificationMessage", testAcceptedNotificationMessage),
     ("testRejectedInteractiveMessage", testRejectedInteractiveMessage),
+    ("testRejectedNotificationMessage", testRejectedNotificationMessage),
     ("testGoogleCalendarEventRange", testGoogleCalendarEventRange)
   ]
 }
