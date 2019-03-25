@@ -10,7 +10,10 @@ extension AppMiddlewareTests {
 }
 extension DialogflowTests {
   static var allTests: [(String, (DialogflowTests) -> () throws -> Void)] = [
-    ("testDialogflow", testDialogflow)
+    ("testFillDateContextDialogflow", testFillDateContextDialogflow),
+    ("testFullActionDialogflow", testFullActionDialogflow),
+    ("testFullActionDialogflowWithTodayAndTimePeriod", testFullActionDialogflowWithTodayAndTimePeriod),
+    ("testFullActionDialogflowWithDatePeriod", testFullActionDialogflowWithDatePeriod)
   ]
 }
 extension EnvVarTests {
@@ -21,7 +24,10 @@ extension EnvVarTests {
 extension SlackTests {
   static var allTests: [(String, (SlackTests) -> () throws -> Void)] = [
     ("testAcceptedInteractiveMessage", testAcceptedInteractiveMessage),
-    ("testRejectedInteractiveMessage", testRejectedInteractiveMessage)
+    ("testAcceptedNotificationMessage", testAcceptedNotificationMessage),
+    ("testRejectedInteractiveMessage", testRejectedInteractiveMessage),
+    ("testRejectedNotificationMessage", testRejectedNotificationMessage),
+    ("testGoogleCalendarEventRange", testGoogleCalendarEventRange)
   ]
 }
 
