@@ -10,7 +10,7 @@ let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, Response
   validateSlackSignature(signature: Current.envVars.slack.secret)
     <<< decodeAbsenceMiddleware
     <<< filter(
-      ^\.isAccepted,
+      ^\.isApproved,
       or: sendRejectionMessagesMiddleware <| respond(encoder: slackJsonEncoder))
     <<< fetchAcceptanceComponentsMiddleware
     <<< createCalendarEventMiddleware
@@ -27,11 +27,24 @@ private func decodeAbsenceMiddleware(
     }
 
     let updatedAbsence = absence
-      |> \.status .~ (conn.data.isAccepted ? .approved : .rejected)
+      |> \.status .~ conn.data.status
       |> \.reviewer .~ .left(conn.data.user.id)
     
     return conn.map(const(updatedAbsence))
       |> middleware
+  }
+}
+
+extension InteractiveMessageAction {
+  fileprivate var status: Absence.Status {
+    switch self.actions.first!.value {
+    case .accept:
+      return .accepted
+    case .silentAccept:
+      return .silentlyAccepted
+    case .reject:
+      return .rejected
+    }
   }
 }
 
