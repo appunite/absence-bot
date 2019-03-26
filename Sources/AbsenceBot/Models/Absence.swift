@@ -27,8 +27,9 @@ public struct Absence: Codable, Equatable {
 
   public enum Status: Int, Codable, Equatable {
     case pending
-    case approved
+    case accepted
     case rejected
+    case silentlyAccepted
   }
 
 
@@ -48,15 +49,17 @@ extension Absence {
 }
 
 extension Absence {
-  public var isAccepted: Bool {
-    if case .approved = status {
+  public var isApproved: Bool {
+    switch status {
+    case .accepted, .silentlyAccepted:
       return true
+    default:
+      return false
     }
-    return false
   }
-  
-  public var isRejected: Bool {
-    if case .rejected = status {
+
+  public var isSilentlyAccepted: Bool {
+    if case .silentlyAccepted = status {
       return true
     }
     return false
@@ -86,6 +89,11 @@ extension Absence {
 }
 
 internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
+  let requester = absence.requester.right
+    .map(GoogleCalendar.Event.Actor.init)
+  let reviewer = absence.reviewer?.right
+    .map(GoogleCalendar.Event.Actor.init)
+
   return .init(
     id: nil,
     colorId: absence.reason.colorId,
@@ -96,10 +104,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     description: nil,
     start: startDateTime(from: absence.interval),
     end: endDateTime(from: absence.interval),
-    attendees: [
-      .init(email: absence.requester.right!.profile.email, displayName: absence.requester.right!.profile.name),
-      .init(email: absence.reviewer!.right!.profile.email, displayName: absence.reviewer!.right!.profile.name)
-    ]
+    attendees: [requester, !absence.isSilentlyAccepted ? reviewer : nil].compactMap(id)
   )
 }
 
@@ -121,6 +126,13 @@ private func endDateTime(from interval: DateInterval) -> GoogleCalendar.Event.Da
     date: interval.isAllDay ? nextDay(interval.end) : nil,
     dateTime: !interval.isAllDay ? interval.end : nil
   )
+}
+
+extension GoogleCalendar.Event.Actor {
+  internal init(user: Slack.User) {
+    self.email = user.profile.email
+    self.displayName = user.profile.name
+  }
 }
 
 extension Absence {

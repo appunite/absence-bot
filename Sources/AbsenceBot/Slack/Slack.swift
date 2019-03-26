@@ -102,17 +102,7 @@ public struct Slack {
         public enum Action: String, Codable {
           case accept
           case reject
-        }
-        
-        public var isAccepted: Bool {
-          if case .accept = value {
-            return true
-          }
-          return false
-        }
-        
-        public var isRejected: Bool {
-          return !isAccepted
+          case silentAccept
         }
       }
 
@@ -233,15 +223,19 @@ extension Slack.Message.Attachment {
       .encode(rawAbsence)
       .base64EncodedString()
 
-    return .approvalRequestAttachement(absence: absence, callback: payload, actions: [.accept(), .reject()])
+    return .approvalRequestAttachement(absence: absence, callback: payload, actions: [.accept(), .silentAccept(), .reject()])
   }
 }
 
 extension Slack.Message.Attachment.InteractiveAction {
   public static func accept() -> Slack.Message.Attachment.InteractiveAction {
-    return .init(name: "accept", type: "button", style: "primary", text: "Approve", value: .accept)
+    return .init(name: "accept", type: "button", style: "primary", text: "Approve & participate", value: .accept)
   }
-  
+
+  public static func silentAccept() -> Slack.Message.Attachment.InteractiveAction {
+    return .init(name: "accept", type: "button", style: "normal", text: "Approve & ignore", value: .silentAccept)
+  }
+
   public static func reject() -> Slack.Message.Attachment.InteractiveAction {
     return .init(name: "reject", type: "button", style: "danger", text: "Reject", value: .reject)
   }
