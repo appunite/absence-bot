@@ -95,7 +95,7 @@ extension GoogleCalendar.OAuthPayload {
 
 extension Absence {
   public static let mock = Absence(
-    status: .approved,
+    status: .accepted,
     requester: .left("JAKKOW"),
     interval: .mock,
     reason: .holiday,
@@ -133,6 +133,12 @@ extension InteractiveMessageAction {
 
   public static let accept = mock
     |> \.actions .~ [.accept]
+    |> \.callbackId .~ ((try? JSONEncoder()
+      .encode(Absence.interactiveMessageActionPayloadMock)
+      .base64EncodedString()) ?? "")
+
+  public static let silentAccept = mock
+    |> \.actions .~ [.silentAccept]
     |> \.callbackId .~ ((try? JSONEncoder()
       .encode(Absence.interactiveMessageActionPayloadMock)
       .base64EncodedString()) ?? "")
@@ -232,6 +238,10 @@ extension Slack.Message.Attachment.InteractiveAction {
   public static let accept = mock
     |> \.name .~ "accept"
     |> \.value .~ .accept
+
+  public static let silentAccept = mock
+    |> \.name .~ "silentAccept"
+    |> \.value .~ .silentAccept
 
   public static let reject = mock
     |> \.name .~ "reject"
