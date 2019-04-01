@@ -335,6 +335,10 @@ extension Webhook {
     |> \.outputContexts <<< map <<< \.parameters .~ .illness
 }
 
+extension ReportResult {
+  public static let mock = ReportResult(event: .mock)
+}
+
 extension TimeZone {
   public static let mock = TimeZone(secondsFromGMT: 0)!
 }
