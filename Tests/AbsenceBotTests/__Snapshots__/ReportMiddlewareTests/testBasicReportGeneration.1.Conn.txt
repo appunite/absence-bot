@@ -1,0 +1,14 @@
+GET http://localhost:8080/report/2019/3
+Authorization: Basic aGVsbG86d29ybGQ=
+
+200 OK
+Content-Length: 349
+Content-Type: application/json
+Referrer-Policy: strict-origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 1; mode=block
+
+[{"end":"31.12.2018 12:00","eventLink":"https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc","reason":"holiday","id":"1","start":"01.01.2019 12:00","requester":"Jan Kowalski","createAt":"01.01.2019 00:00","updatedAt":"01.01.2019 00:00","reviewer":"Jan Kowlaski"}]
