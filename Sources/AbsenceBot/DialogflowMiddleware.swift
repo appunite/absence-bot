@@ -140,7 +140,10 @@ private func dateInterval(parameters: Context.Parameters, tz: TimeZone) -> DateI
   
   // date period
   if let start = parameters.dateStart, let end = parameters.dateEnd {
-    return .init(dates: (start, end), tz: tz)
+    return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+      start.dateByReplacingTime(from: Date().startOfDay()),
+      end.dateByReplacingTime(from: Date().startOfDay())
+    )
   }
   
   // mixed date & date time period
