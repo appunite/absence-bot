@@ -10,7 +10,7 @@ let package = Package(
     .executable(name: "Server", targets: ["Server"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-web.git", .revision("a968110")),
+    .package(url: "https://github.com/pointfreeco/swift-web.git", .revision("b896eb4806412c998a75b4954dfbebbc42ad294c")),
     .package(url: "https://github.com/pointfreeco/swift-prelude.git", .branch("8cbc934")),
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.2.0"),
     .package(url: "https://github.com/IBM-Swift/Swift-JWT.git", .branch("master"))
