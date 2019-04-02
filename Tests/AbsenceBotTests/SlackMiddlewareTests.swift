@@ -111,7 +111,7 @@ class SlackTests: TestCase {
       &Current,
       \.calendar.createEvent .~ { _, event in
         // on silent accept there should be one attendee (requester)
-        XCTAssertEqual(event.attendees.count, 1)
+        XCTAssertEqual(event.attendees?.count, 1)
         return pure(.mock)
       }
     )
@@ -128,7 +128,7 @@ class SlackTests: TestCase {
       &Current,
       \.calendar.createEvent .~ { _, event in
         // on normal accept there should be two attendees (requester & reviewer)
-        XCTAssertEqual(event.attendees.count, 2)
+        XCTAssertEqual(event.attendees?.count, 2)
         return pure(.mock)
       }
     )

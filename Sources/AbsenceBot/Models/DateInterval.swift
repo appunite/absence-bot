@@ -18,7 +18,7 @@ extension DateInterval {
     self.start = tz.flatMap { sortedDates.first!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.first!
     self.end = tz.flatMap { sortedDates.last!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.last!
   }
-  
+
   public var isAllDay: Bool {
     let calendar = Calendar.gmtTimeZoneCalendar
     let components: Set<Calendar.Component> = [.hour, .minute, .second]
@@ -46,6 +46,21 @@ extension DateInterval {
     return dates(tz: tz)
       .map({ bolded ? "*\($0)*" : $0})
       .joined(separator: " - ")
+  }
+}
+
+extension DateInterval {
+  init?(year: Int, month: Int) {
+    let endDateComponents = DateComponents(month: 1, second: -1)
+    let startDateComponents = DateComponents(year: year, month: month, day: 1)
+    
+    let calendar = Calendar.gmtTimeZoneCalendar
+    guard let start = calendar.date(from: startDateComponents),
+      let end = calendar.date(byAdding: endDateComponents, to: start)
+      else { return nil }
+
+    self.start = start
+    self.end = end
   }
 }
 

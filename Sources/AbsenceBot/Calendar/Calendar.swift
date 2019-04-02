@@ -9,12 +9,16 @@ public struct GoogleCalendar {
   /// Fetches Google OAuth access token
   public var fetchAuthToken: () -> EitherIO<Error, Either<OAuthError, AccessToken>>
 
-  /// Create
+  /// Create calendar event
   public var createEvent: (AccessToken, Event) -> EitherIO<Error, Event>
 
+  /// Get calendar events
+  public var fetchEvents: (AccessToken, DateInterval) -> EitherIO<Error, EventsEnvelope>
+
   static let live = GoogleCalendar(
-    fetchAuthToken: { AbsenceBot.fetchAuthToken() |> runCalendar} ,
-    createEvent: { AbsenceBot.createEvent(with: $0, event: $1) |> runCalendar }
+    fetchAuthToken: { AbsenceBot.fetchAuthToken() |> runCalendar},
+    createEvent: { AbsenceBot.createEvent(with: $0, event: $1) |> runCalendar },
+    fetchEvents: { AbsenceBot.fetchEvents(with: $0, period: $1) |> runCalendar }
   )
 
   public struct AccessToken: Codable {
@@ -43,6 +47,17 @@ public struct GoogleCalendar {
     }
   }
 
+  public struct EventsEnvelope: Codable, Equatable {
+    public private(set) var token: String?
+    public private(set) var events: [Event]
+    
+    public enum CodingKeys: String, CodingKey {
+      case token = "nextSyncToken"
+      case events = "items"
+    }
+
+  }
+
   // docs: https://developers.google.com/calendar/v3/reference/events/insert
   public struct Event: Codable, Equatable {
     public private(set) var id: String?
@@ -54,7 +69,7 @@ public struct GoogleCalendar {
     public private(set) var description: String?
     public private(set) var start: DateTime
     public private(set) var end: DateTime
-    public private(set) var attendees: [Actor]
+    public private(set) var attendees: [Actor]?
 
     public struct Actor: Codable, Equatable {
       public var email: String
@@ -121,6 +136,24 @@ func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.E
   )
 }
 
+func fetchEvents(with token: GoogleCalendar.AccessToken, period: DateInterval) -> DecodableRequest<GoogleCalendar.EventsEnvelope> {
+  let bodyParts = [
+    "timeMin": dateTimeFormatter.string(from: period.start),
+    "timeMax": dateTimeFormatter.string(from: period.end),
+    "maxResults": "2500",
+    "fields": "items(attendees(displayName,email),created,description,end,id,start,summary,updated),nextPageToken,nextSyncToken"
+  ]
+
+  return DecodableRequest(
+    rawValue: URLRequest(url: URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(Current.envVars.google.calendar)/events?\(urlFormEncode(value: bodyParts))")!)
+      |> \.httpMethod .~ "GET"
+      |> \.allHTTPHeaderFields .~ [
+        "Authorization": "Bearer \(token.accessToken)",
+        "Content-type": "application/json"
+    ]
+  )
+}
+
 private func runCalendar<A>(_ gitHubRequest: DecodableRequest<A>) -> EitherIO<Error, A> {
   return jsonDataTask(with: gitHubRequest.rawValue, decoder: calendarJsonDecoder)
 }
@@ -140,17 +173,17 @@ extension GoogleCalendar.OAuthPayload: Claims {
 extension GoogleCalendar.Event.DateTime: Codable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let _date = try container.decodeIfPresent(String.self, forKey: CodingKeys.date)
+    let _date = try container.decodeIfPresent(String.self, forKey: .date)
     let _dateTime = try container.decodeIfPresent(String.self, forKey: .dateTime)
     self.date = _date.flatMap { dateFormatter.date(from: $0) }
-    self.dateTime = _dateTime.flatMap { dateTimeFormatter.date(from: $0) }
+    self.dateTime = _dateTime.flatMap { intervalDateTimeFormatter.date(from: $0) }
   }
   
   public func encode(to encoder: Encoder) throws {
     var container = encoder
       .container(keyedBy: CodingKeys.self)
     let _date = self.date.map { dateFormatter.string(from: $0) }
-    let _dateTime = self.dateTime.map { dateTimeFormatter.string(from: $0) }
+    let _dateTime = self.dateTime.map { intervalDateTimeFormatter.string(from: $0) }
     try container.encodeIfPresent(_date, forKey: .date)
     try container.encodeIfPresent(_dateTime, forKey: .dateTime)
   }
@@ -166,7 +199,10 @@ private let dateTimeFormatter = DateFormatter()
   |> \.timeZone .~ Current.hqTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
+private let intervalDateTimeFormatter = DateFormatter()
+  |> iso8601
+  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZ"
 
 private let calendarJsonDecoder = JSONDecoder()
   |> \.dateDecodingStrategy .~ .formatted(dateTimeFormatter)
-

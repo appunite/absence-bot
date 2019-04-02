@@ -41,6 +41,9 @@ private func render(conn: Conn<StatusLineOpen, Route>)
     case .slack(let message):
       return conn.map(const(message))
         |> slackInteractiveMessageActionMiddleware
+    case .report(let year, let month):
+      return conn.map(const(.init(year: year, month: month)))
+        |> reportMiddleware
     }
 }
 
