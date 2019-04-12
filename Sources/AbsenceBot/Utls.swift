@@ -156,7 +156,8 @@ extension Date {
   }
   
   internal func dateByReplacingTimeZone(timeZone: TimeZone) -> Date? {
-    var calendar = Calendar.gmtTimeZoneCalendar
+    var calendar = Calendar(identifier: .iso8601)
+      |> \.timeZone .~ Current.dialogflowTimeZone()
 
     // get dates components
     let dateComponents = calendar.dateComponents(
