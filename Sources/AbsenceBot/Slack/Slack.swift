@@ -247,7 +247,7 @@ extension Slack.Message.Attachment.Field {
   }
   
   public static func interval(_ absence: Absence) -> Slack.Message.Attachment.Field {
-    return .init(title: "Interval", value: absence.interval.dateRange(tz: Current.hqTimeZone(), bolded: false), short: true)
+    return .init(title: "Interval", value: absence.interval.dateRange(tz: Current.calendarTimeZone(), bolded: false), short: true)
   }
 }
 

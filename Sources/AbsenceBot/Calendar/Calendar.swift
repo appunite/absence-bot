@@ -191,12 +191,12 @@ extension GoogleCalendar.Event.DateTime: Codable {
 
 private let dateFormatter = DateFormatter()
   |> iso8601
-  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.timeZone .~ Current.calendarTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd"
 
 private let dateTimeFormatter = DateFormatter()
   |> iso8601
-  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.timeZone .~ Current.calendarTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
 
 private let intervalDateTimeFormatter = DateFormatter()
