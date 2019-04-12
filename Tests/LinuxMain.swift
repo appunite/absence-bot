@@ -21,13 +21,22 @@ extension EnvVarTests {
     ("testDecoding", testDecoding)
   ]
 }
+extension ReportMiddlewareTests {
+  static var allTests: [(String, (ReportMiddlewareTests) -> () throws -> Void)] = [
+    ("testBasicReportGeneration", testBasicReportGeneration)
+  ]
+}
 extension SlackTests {
   static var allTests: [(String, (SlackTests) -> () throws -> Void)] = [
     ("testAcceptedInteractiveMessage", testAcceptedInteractiveMessage),
     ("testAcceptedNotificationMessage", testAcceptedNotificationMessage),
+    ("testSilentlyAcceptedInteractiveMessage", testSilentlyAcceptedInteractiveMessage),
+    ("testSilentlyAcceptedNotificationMessage", testSilentlyAcceptedNotificationMessage),
     ("testRejectedInteractiveMessage", testRejectedInteractiveMessage),
     ("testRejectedNotificationMessage", testRejectedNotificationMessage),
-    ("testGoogleCalendarEventRange", testGoogleCalendarEventRange)
+    ("testGoogleCalendarEventRange", testGoogleCalendarEventRange),
+    ("testGoogleCalendarEventAttendeesCountForSilectAcceptAction", testGoogleCalendarEventAttendeesCountForSilectAcceptAction),
+    ("testGoogleCalendarEventAttendeesCountForNormalAcceptAction", testGoogleCalendarEventAttendeesCountForNormalAcceptAction)
   ]
 }
 
@@ -36,6 +45,7 @@ XCTMain([
   testCase(AppMiddlewareTests.allTests),
   testCase(DialogflowTests.allTests),
   testCase(EnvVarTests.allTests),
+  testCase(ReportMiddlewareTests.allTests),
   testCase(SlackTests.allTests),
 ])
 // swiftlint:enable trailing_comma
