@@ -11,10 +11,10 @@ let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, Response
     <<< decodeAbsenceMiddleware
     <<< filter(
       ^\.isApproved,
-      or: sendRejectionMessagesMiddleware <| respond(encoder: slackJsonEncoder))
+      or: rejectionFallbackMiddleware <| respond(encoder: slackJsonEncoder))
     <<< fetchAcceptanceComponentsMiddleware
     <<< createCalendarEventMiddleware
-    <<< sendAcceptanceMessagesMiddleware
+    <<< acceptanceFallbackMiddleware
      <| respond(encoder: slackJsonEncoder)
 
 private func decodeAbsenceMiddleware(
@@ -48,7 +48,7 @@ extension InteractiveMessageAction {
   }
 }
 
-private func sendRejectionMessagesMiddleware(
+private func rejectionFallbackMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
@@ -145,29 +145,21 @@ private func createCalendarEventMiddleware(
   }
 }
 
-private func sendAcceptanceMessagesMiddleware(
+private func acceptanceFallbackMiddleware(
   _ middleware: @escaping Middleware<StatusLineOpen, ResponseEnded, InteractiveMessageFallback, Data>
   ) -> Middleware<StatusLineOpen, ResponseEnded, Absence, Data> {
   
   return { conn in
-    return Current.slack
+    // inform requester about results, I'm not waiting for response here, even if
+    // there will be some failure here user will be informed by e-mail notification from google calendar
+    _ = Current.slack
       .postMessage(.acceptanceNotificationMessage(absence: conn.data))
       .run
-      .flatMap { errorOrUser in
-        switch errorOrUser {
-        case .right(.right):
-          return conn.map(const(.acceptanceFallback(absence: conn.data)))
-            |> middleware
-          
-        case let .right(.left(e)):
-          return conn
-            |> respond(error: e.error)
-          
-        case let .left(e):
-          return conn
-            |> respond(error: e.localizedDescription)
-        }
-    }
+      .perform()
+
+    // send status fallback
+    return conn.map(const(.acceptanceFallback(absence: conn.data)))
+      |> middleware
   }
 }
 
