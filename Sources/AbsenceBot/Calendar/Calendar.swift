@@ -201,7 +201,7 @@ private let dateTimeFormatter = DateFormatter()
 
 private let intervalDateTimeFormatter = DateFormatter()
   |> iso8601
-  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.timeZone .~ Current.calendarTimeZone()
   |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZ"
 
 private let calendarJsonDecoder = JSONDecoder()

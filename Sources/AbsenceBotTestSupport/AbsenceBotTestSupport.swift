@@ -16,7 +16,7 @@ extension Environment {
     envVars: .mock,
     date: unzurry(.mock),
     uuid: unzurry(.mock),
-    hqTimeZone: unzurry(.mock),
+    calendarTimeZone: unzurry(.mock),
     dialogflowTimeZone: unzurry(.mock)
   )
 }

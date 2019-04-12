@@ -76,6 +76,6 @@ private let reportJsonEncoder = JSONEncoder()
 
 private let csvDateFormatter = DateFormatter()
   |> \.locale .~ Locale(identifier: "en_US_POSIX")
-  |> \.timeZone .~ Current.hqTimeZone()
+  |> \.timeZone .~ Current.calendarTimeZone()
   |> \.calendar .~ Calendar(identifier: .iso8601)
   |> \.dateFormat .~ "dd.MM.yyyy HH:mm"
