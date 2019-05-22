@@ -6,17 +6,28 @@ before_script:
   - export LANG=en_US.UTF-8
 
 stages:
+  - test
   - build
   - deploy
 
 docker:
   image: docker:latest
   stage: build
+  before_script:
+    - eval "$(curl -sL https://gist.githubusercontent.com/kylef/5c0475ff02b7c7671d2a/raw/9f442512a46d7a2af7b850d65a7e9bd31edfb09b/swiftenv-install.sh)";
   script:
-  - docker version
-  - docker build -t "$IMAGE_NAME:${CI_COMMIT_SHA:0:8}" -f Dockerfile .
-  - docker login -u admin -p $CI_BUILD_TOKEN $REGISTRY
-  - docker push "$IMAGE_NAME:${CI_COMMIT_SHA:0:8}"
+    - swift test
+  tags:
+    - k8s
+
+docker:
+  image: docker:latest
+  stage: build
+  script:
+    - docker version
+    - docker build -t "$IMAGE_NAME:${CI_COMMIT_SHA:0:8}" -f Dockerfile .
+    - docker login -u admin -p $CI_BUILD_TOKEN $REGISTRY
+    - docker push "$IMAGE_NAME:${CI_COMMIT_SHA:0:8}"
   tags:
     - privileged
 
