@@ -50,13 +50,17 @@ sourcery-routes:
 		--output ./Sources/AbsenceBot/__Generated__/DerivedPartialIsos.swift
 	@echo "  ✅ Generated!"
 
+SOURCERY_TESTS_IMPORTS = \
+	@testable import AbsenceBotTests;
+
 sourcery-tests:
 	@echo "  ⚠️  Generating tests..."
 	@.bin/sourcery \
 		--quiet \
 		--sources ./Tests/ \
 		--templates ./.sourcery-templates/LinuxMain.stencil \
-		--output ./Tests/
+		--output ./Tests/ \
+		--args testimports='$(SOURCERY_TESTS_IMPORTS)'
 	@mv ./Tests/LinuxMain.generated.swift ./Tests/LinuxMain.swift
 	@echo "  ✅ Generated!"
 

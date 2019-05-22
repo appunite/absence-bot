@@ -8,7 +8,7 @@ import SnapshotTesting
 import AbsenceBotTestSupport
 @testable import AbsenceBot
 
-class SlackTests: TestCase {
+class SlackMiddlewareTests: TestCase {
   override func setUp() {
     super.setUp()
     Current = .mock
@@ -23,10 +23,11 @@ class SlackTests: TestCase {
   }
 
   func testAcceptedNotificationMessage() {
+    #if !os(Linux)
     update(
       &Current,
-      \.slack.postMessage .~ { message in
-        assertSnapshot(matching: message, as: .dump)
+      \.slack.postMessage .~ {
+        assertSnapshot(matching: $0, as: .dump)
         return pure(pure(.mock))
       }
     )
@@ -35,6 +36,7 @@ class SlackTests: TestCase {
     let conn = connection(from: webhook)
 
     _ = appMiddleware(conn).perform()
+    #endif
   }
 
   func testSilentlyAcceptedInteractiveMessage() {
@@ -45,10 +47,11 @@ class SlackTests: TestCase {
   }
   
   func testSilentlyAcceptedNotificationMessage() {
+    #if !os(Linux)
     update(
       &Current,
-      \.slack.postMessage .~ { message in
-        assertSnapshot(matching: message, as: .dump)
+      \.slack.postMessage .~ {
+        assertSnapshot(matching: $0, as: .dump)
         return pure(pure(.mock))
       }
     )
@@ -57,6 +60,7 @@ class SlackTests: TestCase {
     let conn = connection(from: webhook)
     
     _ = appMiddleware(conn).perform()
+    #endif
   }
 
   func testRejectedInteractiveMessage() {
@@ -67,10 +71,11 @@ class SlackTests: TestCase {
   }
 
   func testRejectedNotificationMessage() {
+    #if !os(Linux)
     update(
       &Current,
-      \.slack.postMessage .~ { message in
-        assertSnapshot(matching: message, as: .dump)
+      \.slack.postMessage .~ {
+        assertSnapshot(matching: $0, as: .dump)
         return pure(pure(.mock))
       }
     )
@@ -79,6 +84,7 @@ class SlackTests: TestCase {
     let conn = connection(from: webhook)
     
     _ = appMiddleware(conn).perform()
+    #endif
   }
 
   func testGoogleCalendarEventRange() {

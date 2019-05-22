@@ -8,7 +8,7 @@ import SnapshotTesting
 import AbsenceBotTestSupport
 @testable import AbsenceBot
 
-class DialogflowTests: TestCase {
+class DialogflowMiddlewareTests: TestCase {
   override func setUp() {
     super.setUp()
 //    record = true

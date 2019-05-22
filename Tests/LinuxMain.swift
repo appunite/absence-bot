@@ -3,13 +3,14 @@
 
 import XCTest
 
+@testable import AbsenceBotTests;
 extension AppMiddlewareTests {
   static var allTests: [(String, (AppMiddlewareTests) -> () throws -> Void)] = [
     ("testWithHttps", testWithHttps)
   ]
 }
-extension DialogflowTests {
-  static var allTests: [(String, (DialogflowTests) -> () throws -> Void)] = [
+extension DialogflowMiddlewareTests {
+  static var allTests: [(String, (DialogflowMiddlewareTests) -> () throws -> Void)] = [
     ("testFillDateContextDialogflow", testFillDateContextDialogflow),
     ("testFullActionDialogflow", testFullActionDialogflow),
     ("testFullActionDialogflowWithTodayAndTimePeriod", testFullActionDialogflowWithTodayAndTimePeriod),
@@ -26,8 +27,8 @@ extension ReportMiddlewareTests {
     ("testBasicReportGeneration", testBasicReportGeneration)
   ]
 }
-extension SlackTests {
-  static var allTests: [(String, (SlackTests) -> () throws -> Void)] = [
+extension SlackMiddlewareTests {
+  static var allTests: [(String, (SlackMiddlewareTests) -> () throws -> Void)] = [
     ("testAcceptedInteractiveMessage", testAcceptedInteractiveMessage),
     ("testAcceptedNotificationMessage", testAcceptedNotificationMessage),
     ("testSilentlyAcceptedInteractiveMessage", testSilentlyAcceptedInteractiveMessage),
@@ -43,9 +44,9 @@ extension SlackTests {
 // swiftlint:disable trailing_comma
 XCTMain([
   testCase(AppMiddlewareTests.allTests),
-  testCase(DialogflowTests.allTests),
+  testCase(DialogflowMiddlewareTests.allTests),
   testCase(EnvVarTests.allTests),
   testCase(ReportMiddlewareTests.allTests),
-  testCase(SlackTests.allTests),
+  testCase(SlackMiddlewareTests.allTests),
 ])
 // swiftlint:enable trailing_comma
