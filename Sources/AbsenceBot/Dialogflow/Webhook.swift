@@ -3,11 +3,11 @@ import Optics
 import Prelude
 
 public struct Webhook: Equatable {
-  public private(set) var session: URL
-  public private(set) var user: Slack.User.Id
-  public private(set) var channel: Slack.Message.Channel
-  public private(set) var action: Action
-  public private(set) var outputContexts: [Context]
+  public var session: URL
+  public var user: Slack.User.Id
+  public var channel: Slack.Message.Channel
+  public var action: Action
+  public var outputContexts: [Context]
 
   public enum Action: String, Codable {
     case full = "absenceday.absenceday-full"
@@ -105,3 +105,4 @@ public let dialogflowJsonDecoder = JSONDecoder()
 
 public let dialogflowJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .formatted(dialogflowDateFormatter)
+  |> sortedKeysOutputFormatting

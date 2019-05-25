@@ -3,7 +3,7 @@
         <img src="http://img.shields.io/badge/license-Apache-brightgreen.svg" alt="Apache License">
     </a>
     <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/swift-4.2.1-brightgreen.svg" alt="Swift 4.2.1">
+        <img src="http://img.shields.io/badge/swift-5.0.1-brightgreen.svg" alt="Swift 5.0.1">
     </a>
     <a href="https://travis-ci.org/appunite/absence-bot">
         <img src="https://travis-ci.org/appunite/absence-bot.svg?branch=master" alt="Build Status">

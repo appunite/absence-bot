@@ -22,9 +22,9 @@ public struct GoogleCalendar {
   )
 
   public struct AccessToken: Codable {
-    public private(set) var accessToken: String
-    public private(set) var expiresIn: Int
-    public private(set) var tokenType: String
+    public var accessToken: String
+    public var expiresIn: Int
+    public var tokenType: String
     
     private enum CodingKeys: String, CodingKey {
       case accessToken = "access_token"
@@ -34,8 +34,8 @@ public struct GoogleCalendar {
   }
   
   public struct OAuthError: Codable {
-    public private(set) var description: String
-    public private(set) var error: Error
+    public var description: String
+    public var error: Error
     
     public enum Error: String, Codable {
       case invalidGrant = "invalid_grant"
@@ -48,8 +48,8 @@ public struct GoogleCalendar {
   }
 
   public struct EventsEnvelope: Codable, Equatable {
-    public private(set) var token: String?
-    public private(set) var events: [Event]
+    public var token: String?
+    public var events: [Event]
     
     public enum CodingKeys: String, CodingKey {
       case token = "nextSyncToken"
@@ -60,16 +60,16 @@ public struct GoogleCalendar {
 
   // docs: https://developers.google.com/calendar/v3/reference/events/insert
   public struct Event: Codable, Equatable {
-    public private(set) var id: String?
-    public private(set) var colorId: String?
-    public private(set) var htmlLink: URL?
-    public private(set) var created: Date?
-    public private(set) var updated: Date?
-    public private(set) var summary: String
-    public private(set) var description: String?
-    public private(set) var start: DateTime
-    public private(set) var end: DateTime
-    public private(set) var attendees: [Actor]?
+    public var id: String?
+    public var colorId: String?
+    public var htmlLink: URL?
+    public var created: Date?
+    public var updated: Date?
+    public var summary: String
+    public var description: String?
+    public var start: DateTime
+    public var end: DateTime
+    public var attendees: [Actor]?
 
     public struct Actor: Codable, Equatable {
       public var email: String
@@ -88,11 +88,11 @@ public struct GoogleCalendar {
   }
 
   public struct OAuthPayload {
-    public private(set) var iss: String
-    public private(set) var scope: String
-    public private(set) var aud: String
-    public private(set) var iat: Date?
-    public private(set) var exp: Date?
+    public var iss: String
+    public var scope: String
+    public var aud: String
+    public var iat: Date?
+    public var exp: Date?
   }
 }
 

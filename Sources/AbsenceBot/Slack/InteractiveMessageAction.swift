@@ -3,18 +3,18 @@ import Foundation
 import Prelude
 
 public struct InteractiveMessageAction {
-  public private(set) var actions: [Slack.Message.Attachment.InteractiveAction]
-  public private(set) var callbackId: String
-  public private(set) var user: User
-  public private(set) var responseURL: URL
-  public private(set) var originalMessage: Message
+  public var actions: [Slack.Message.Attachment.InteractiveAction]
+  public var callbackId: String
+  public var user: User
+  public var responseURL: URL
+  public var originalMessage: Message
   
   public struct Message {
-    public private(set) var text: String
+    public var text: String
   }
   
   public struct User {
-    public private(set) var id: Slack.User.Id
+    public var id: Slack.User.Id
   }
   
   enum CodingKeys: String, CodingKey {

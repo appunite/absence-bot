@@ -1,6 +1,5 @@
 os:
   - linux
-  - osx
 env:
 osx_image: xcode10
 language: generic

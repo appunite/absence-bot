@@ -7,9 +7,9 @@ import Prelude
 import Tuple
 
 public struct ReportFilter {
-  public private(set) var year: Int
-  public private(set) var month: Int
-//  public private(set) var reason: Set<Absence.Reason>?
+  public var year: Int
+  public var month: Int
+//  public var reason: Set<Absence.Reason>?
 }
 
 extension ReportFilter: Codable, Equatable {}
@@ -73,6 +73,7 @@ private func fetchGoogleTokenMiddleware(
 
 private let reportJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .formatted(csvDateFormatter)
+  |> sortedKeysOutputFormatting
 
 private let csvDateFormatter = DateFormatter()
   |> \.locale .~ Locale(identifier: "en_US_POSIX")

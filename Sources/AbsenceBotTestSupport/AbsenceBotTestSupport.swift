@@ -139,22 +139,22 @@ extension InteractiveMessageAction {
     responseURL: URL(string: "https://api.absencebot.com/slack")!,
     originalMessage: .mock
   )
-
+  
   public static let accept = mock
     |> \.actions .~ [.accept]
-    |> \.callbackId .~ ((try? JSONEncoder()
+    |> \.callbackId .~ ((try? (JSONEncoder() |> sortedKeysOutputFormatting)
       .encode(Absence.interactiveMessageActionPayloadMock)
       .base64EncodedString()) ?? "")
 
   public static let silentAccept = mock
     |> \.actions .~ [.silentAccept]
-    |> \.callbackId .~ ((try? JSONEncoder()
+    |> \.callbackId .~ ((try? (JSONEncoder() |> sortedKeysOutputFormatting)
       .encode(Absence.interactiveMessageActionPayloadMock)
       .base64EncodedString()) ?? "")
 
   public static let reject = mock
     |> \.actions .~ [.reject]
-    |> \.callbackId .~ ((try? JSONEncoder()
+    |> \.callbackId .~ ((try? (JSONEncoder() |> sortedKeysOutputFormatting)
       .encode(Absence.interactiveMessageActionPayloadMock)
       .base64EncodedString()) ?? "")
 }
@@ -360,56 +360,6 @@ extension Snapshotting {
   }
 }
 
-#if os(Linux)
-extension SnapshotTestCase {
-  public func assertSnapshots<A, B>(
-    matching value: A,
-    as strategies: [String: Snapshotting<A, B>],
-    record recording: Bool = false,
-    timeout: TimeInterval = 5,
-    file: StaticString = #file,
-    testName: String = #function,
-    line: UInt = #line
-    ) {
-    
-    strategies.forEach { name, strategy in
-      assertSnapshot(
-        matching: value,
-        as: strategy,
-        named: name,
-        record: recording,
-        timeout: timeout,
-        file: file,
-        testName: testName,
-        line: line
-      )
-    }
-  }
-  
-  public func assertSnapshots<A, B>(
-    matching value: A,
-    as strategies: [Snapshotting<A, B>],
-    record recording: Bool = false,
-    timeout: TimeInterval = 5,
-    file: StaticString = #file,
-    testName: String = #function,
-    line: UInt = #line
-    ) {
-    
-    strategies.forEach { strategy in
-      assertSnapshot(
-        matching: value,
-        as: strategy,
-        record: recording,
-        timeout: timeout,
-        file: file,
-        testName: testName,
-        line: line
-      )
-    }
-  }
-}
-#else
 public func assertSnapshots<A, B>(
   matching value: A,
   as strategies: [String: Snapshotting<A, B>],
@@ -456,7 +406,6 @@ public func assertSnapshots<A, B>(
     )
   }
 }
-#endif
 
 public func request(
   with baseRequest: URLRequest,

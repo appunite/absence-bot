@@ -1,10 +1,10 @@
 POST http://localhost:8080/dialogflow
 Authorization: Basic aGVsbG86d29ybGQ=
 
-{"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991","queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"date":"2019-01-01T12:00:00+00:00","time-period":{"endTime":"2019-02-16T17:00:00+00:00","startTime":"2019-02-16T14:00:00+00:00"},"reason":"holiday"},"lifespanCount":5}]},"originalDetectIntentRequest":{"payload":{"data":{"event":{"channel":"DDNGJ2SLE","user":"U456V5Q4E"}}}}}
+{"originalDetectIntentRequest":{"payload":{"data":{"event":{"channel":"DDNGJ2SLE","user":"U456V5Q4E"}}}},"queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"lifespanCount":5,"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"date":"2019-01-01T12:00:00+00:00","reason":"holiday","time-period":{"endTime":"2019-02-16T17:00:00+00:00","startTime":"2019-02-16T14:00:00+00:00"}}}]},"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991"}
 
 200 OK
-Content-Length: 437
+Content-Length: 405
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -13,4 +13,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-{"fulfillmentText":"So you're planning a *vacation* *January 1, 2019 at 2:00 PM* - *January 1, 2019 at 5:00 PM*, correct?","outputContexts":[{"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-full","parameters":{"date":"2019-01-01T12:00:00+00:00","time-period":{"endTime":"2019-02-16T17:00:00+00:00","startTime":"2019-02-16T14:00:00+00:00"},"reason":"holiday"},"lifespanCount":2}]}
+{"fulfillmentText":"So you're planning a *vacation* Jan 1, 2019, 2:00 - 5:00 PM, correct?","outputContexts":[{"lifespanCount":2,"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-full","parameters":{"date":"2019-01-01T12:00:00+00:00","reason":"holiday","time-period":{"endTime":"2019-02-16T17:00:00+00:00","startTime":"2019-02-16T14:00:00+00:00"}}}]}

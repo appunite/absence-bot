@@ -22,15 +22,15 @@ public struct Slack {
   )
 
   public struct UserPayload: Codable, Equatable  {
-    public private(set) var user: User
+    public var user: User
   }
   
   public struct User: Codable, Equatable {
     public typealias Id = Tagged<User, String>
-    public private(set) var id: Id
+    public var id: Id
     
-    public private(set) var profile: Profile
-    public private(set) var tz: TimeZone
+    public var profile: Profile
+    public var tz: TimeZone
 
 
     private enum CodingKeys: String, CodingKey {
@@ -40,8 +40,8 @@ public struct Slack {
     }
 
     public struct Profile: Codable, Equatable {
-      public private(set) var name: String
-      public private(set) var email: String
+      public var name: String
+      public var email: String
 
       private enum CodingKeys: String, CodingKey {
         case name = "real_name"
@@ -51,34 +51,34 @@ public struct Slack {
   }
 
   public struct StatusPayload: Codable {
-    public private(set) var ok: Bool
+    public var ok: Bool
   }
   
   public struct File: Encodable {
-    public private(set) var content: String
-    public private(set) var channels: String
-    public private(set) var filename: String
-    public private(set) var filetype: String
-    public private(set) var title: String
+    public var content: String
+    public var channels: String
+    public var filename: String
+    public var filetype: String
+    public var title: String
   }
 
   public struct Message: Codable {
     public typealias Channel = Tagged<Message, String>
 
-    public private(set) var text: String?
-    public private(set) var channel: Channel
-    public private(set) var attachments: [Attachment]
+    public var text: String?
+    public var channel: Channel
+    public var attachments: [Attachment]
     
     public struct Attachment: Codable {
-      public private(set) var title: String?
-      public private(set) var text: String?
-      public private(set) var footer: String?
-      public private(set) var ts: Date?
-      public private(set) var color: String?
-      public private(set) var fallback: String?
-      public private(set) var callbackId: String?
-      public private(set) var fields: [Field]?
-      public private(set) var actions: [InteractiveAction]?
+      public var title: String?
+      public var text: String?
+      public var footer: String?
+      public var ts: Date?
+      public var color: String?
+      public var fallback: String?
+      public var callbackId: String?
+      public var fields: [Field]?
+      public var actions: [InteractiveAction]?
 
       enum CodingKeys: String, CodingKey {
         case title
@@ -93,11 +93,11 @@ public struct Slack {
       }
       
       public struct InteractiveAction: Codable, Equatable {
-        public private(set) var name: String
-        public private(set) var type: String
-        public private(set) var style: String?
-        public private(set) var text: String?
-        public private(set) var value: Action
+        public var name: String
+        public var type: String
+        public var style: String?
+        public var text: String?
+        public var value: Action
         
         public enum Action: String, Codable {
           case accept
@@ -107,15 +107,15 @@ public struct Slack {
       }
 
       public struct Field: Codable {
-        public private(set) var title: String?
-        public private(set) var value: String?
-        public private(set) var short: Bool?
+        public var title: String?
+        public var value: String?
+        public var short: Bool?
       }
     }
   }
 
   public struct SlackError: Error, Codable {
-    public private(set) var error: String
+    public var error: String
   }
 }
 
@@ -197,6 +197,7 @@ public let slackJsonDecoder = JSONDecoder()
   |> \.dateDecodingStrategy .~ .secondsSince1970
 public let slackJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
+  |> sortedKeysOutputFormatting
 
 extension Slack.Message.Attachment {
   public static func text(text: String?) -> Slack.Message.Attachment {
