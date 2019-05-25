@@ -64,8 +64,7 @@ If event is approved, the app is adding an event into Google Calendar.
 
 ## ToDo
 
-* improve README and describe how setup all needed services and tools
-* run tests on Travis/CircleCI
+I think I'd be nice to extend this Readme with information how setup all services like Google Calendar or Dialogflow and deploy this on Heroku.
 
 ## About
 
