@@ -1,10 +1,10 @@
 import Foundation
 
 public struct InteractiveMessageFallback {
-  public private(set) var text: String?
-  public private(set) var attachments: [Slack.Message.Attachment]
-  public private(set) var responseType: String
-  public private(set) var replaceOriginal: Bool
+  public var text: String?
+  public var attachments: [Slack.Message.Attachment]
+  public var responseType: String
+  public var replaceOriginal: Bool
   
   enum CodingKeys: String, CodingKey {
     case text = "text"

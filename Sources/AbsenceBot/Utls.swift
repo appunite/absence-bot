@@ -7,11 +7,16 @@ import Cryptor
 
 // PreludeFoundation
 
+public let sortedKeysOutputFormatting = \JSONEncoder.outputFormatting %~ {
+  guard #available(OSX 10.13, *) else { return $0 }
+  return  $0.union([.sortedKeys])
+}
+
 private let guaranteeHeaders = \URLRequest.allHTTPHeaderFields %~ {
   $0 ?? [:]
 }
 
-let setHeader = { name, value in
+public let setHeader = { name, value in
   guaranteeHeaders
     <> (\.allHTTPHeaderFields <<< map <<< \.[name] .~ value)
 }
@@ -180,7 +185,7 @@ public func requireSome<A>(_ e: Either<Error, A?>) -> Either<Error, A> {
 }
 
 public extension URLRequest {
-  public func httpHeaderFieldsValue(_ key: String) -> String? {
+  func httpHeaderFieldsValue(_ key: String) -> String? {
     return allHTTPHeaderFields?
       .first(where: { $0.key == key })?.value
   }
@@ -190,7 +195,7 @@ public extension URLRequest {
   
   /// Returns a cURL command for a request
   /// - return A String object that contains cURL command or "" if an URL is not properly initalized.
-  public var cURL: String {
+  var cURL: String {
     
     guard
       let url = url,

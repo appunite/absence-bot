@@ -1,6 +1,7 @@
 import ApplicativeRouter
 import Foundation
 import Prelude
+import Optics
 import UrlFormEncoding
 
 public protocol DerivePartialIsos {}
@@ -25,7 +26,7 @@ private let routers: [Router<Route>] = [
   .slack
     <¢> post %> lit("slack")
       %> formField("payload", PartialIso.data
-        >>> PartialIso.codableToJsonData(InteractiveMessageAction.self, encoder: .init(), decoder: .init()).inverted)
+        >>> PartialIso.codableToJsonData(InteractiveMessageAction.self, encoder: slackJsonEncoder).inverted)
       <% end,
 
   // Matches: POST /dialogflow

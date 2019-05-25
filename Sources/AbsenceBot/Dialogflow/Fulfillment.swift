@@ -2,8 +2,8 @@ import Foundation
 import Prelude
 
 public struct Fulfillment: Encodable {
-  public private(set) var text: String?
-  public private(set) var contexts: [Context]?
+  public var text: String?
+  public var contexts: [Context]?
   
   enum CodingKeys: String, CodingKey {
     case text = "fulfillmentText"

@@ -4,8 +4,8 @@ import Prelude
 import Optics
 
 public struct DateInterval {
-  public private(set) var start: Date
-  public private(set) var end: Date
+  public var start: Date
+  public var end: Date
 }
 
 extension DateInterval: Codable, Equatable {}
@@ -29,23 +29,21 @@ extension DateInterval {
 }
 
 extension DateInterval {
-  func dates(tz: TimeZone) -> [String] {
-    let sortedDates = Array(Set([self.start, self.end]))
-      .sorted(by: <)
-    
-    if self.isAllDay {
-      return sortedDates
-        .compactMap { daysRangeFormatter(tz).string(from: $0) }
-    } else {
-      return sortedDates
-        .compactMap { dateTimeRangeFormatter(tz).string(from: $0) }
-    }
-  }
-  
   func dateRange(tz: TimeZone, bolded: Bool = true) -> String {
-    return dates(tz: tz)
-      .map({ bolded ? "*\($0)*" : $0})
-      .joined(separator: " - ")
+    guard #available(OSX 10.12, *) else { fatalError() }
+
+    let formatter = self.isAllDay
+      ? fullDaysDateIntervalFormatter(tz)
+      : dateTimeDateIntervalFormatter(tz)
+
+    let raw = formatter
+      .string(from: self.start, to: self.end)
+      
+      // fixing issue with tests on linux
+      .replacingOccurrences(of: " ", with: " ")
+      .replacingOccurrences(of: "–", with: "-")
+
+    return raw
   }
 }
 
@@ -64,20 +62,20 @@ extension DateInterval {
   }
 }
 
-private let daysRangeFormatter: (TimeZone) -> DateFormatter = { timeZone in
-  return DateFormatter()
+private let fullDaysDateIntervalFormatter: (TimeZone) -> DateIntervalFormatter = { timeZone in
+  return DateIntervalFormatter()
+    |> \.dateStyle .~ .medium
+    |> \.timeStyle .~ .none
     |> \.calendar .~ Calendar.gmtTimeZoneCalendar
     |> \.locale .~ Locale(identifier: "en_US_POSIX")
     |> \.timeZone .~ timeZone
-    |> \.dateStyle .~ .long
-    |> \.timeStyle .~ .none
 }
 
-private let dateTimeRangeFormatter: (TimeZone) -> DateFormatter = { timeZone in
-  return DateFormatter()
+private let dateTimeDateIntervalFormatter: (TimeZone) -> DateIntervalFormatter = { timeZone in
+  return DateIntervalFormatter()
+    |> \.dateStyle .~ .medium
+    |> \.timeStyle .~ .short
     |> \.calendar .~ Calendar.gmtTimeZoneCalendar
     |> \.locale .~ Locale(identifier: "en_US_POSIX")
     |> \.timeZone .~ timeZone
-    |> \.dateStyle .~ .long
-    |> \.timeStyle .~ .short
 }

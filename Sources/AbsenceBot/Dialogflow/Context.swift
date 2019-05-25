@@ -2,9 +2,9 @@ import Foundation
 import Prelude
 
 public struct Context: Codable, Equatable {
-  public private(set) var name: URL
-  public private(set) var lifespanCount: Int
-  public private(set) var parameters: Parameters
+  public var name: URL
+  public var lifespanCount: Int
+  public var parameters: Parameters
   
   internal enum Identifier: String {
     case followup = "absenceday-followup"
@@ -18,36 +18,36 @@ public struct Context: Codable, Equatable {
 
   public struct Parameters: Codable, Equatable {
     // @reason
-    public private(set) var reason: String?
+    public var reason: String?
     // @sys.date-period
-    public private(set) var datePeriod: DatePeriod?
+    public var datePeriod: DatePeriod?
     // @sys.date
-    public private(set) var date: Date?
+    public var date: Date?
     // @sys.date
-    public private(set) var dateStart: Date?
+    public var dateStart: Date?
     // @sys.date
-    public private(set) var dateEnd: Date?
+    public var dateEnd: Date?
     // @sys.time-period
-    public private(set) var timePeriod: TimePeriod?
+    public var timePeriod: TimePeriod?
     // @sys.time
-    public private(set) var timeStart: Date?
+    public var timeStart: Date?
     // @sys.time
-    public private(set) var timeEnd: Date?
+    public var timeEnd: Date?
     // @sys.date-time
-    public private(set) var dateTimeStart: Date?
+    public var dateTimeStart: Date?
     // @sys.date-time
-    public private(set) var dateTimeEnd: Date?
+    public var dateTimeEnd: Date?
     // @sys.date
-    public private(set) var dates: [Date]?
+    public var dates: [Date]?
 
     public struct DatePeriod: Codable, Equatable {
-      public private(set) var startDate: Date
-      public private(set) var endDate: Date
+      public var startDate: Date
+      public var endDate: Date
     }
 
     public struct TimePeriod: Codable, Equatable {
-      public private(set) var startTime: Date
-      public private(set) var endTime: Date
+      public var startTime: Date
+      public var endTime: Date
     }
 
     enum CodingKeys: String, CodingKey {

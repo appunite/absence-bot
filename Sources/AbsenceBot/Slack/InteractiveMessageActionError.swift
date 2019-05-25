@@ -1,9 +1,9 @@
 import Foundation
 
 struct InteractiveMessageActionError {
-  public private(set) var text: String
-  public private(set) var replace: Bool
-  public private(set) var type: String
+  public var text: String
+  public var replace: Bool
+  public var type: String
 
   enum CodingKeys: String, CodingKey {
     case type = "response_type"
