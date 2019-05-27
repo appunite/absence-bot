@@ -5,7 +5,7 @@ X-Slack-Signature: v0=3e498ed8ee98bc1c8285c0595159d47e37df8a7281564acb22729a42fe
 payload=%7B%22actions%22:%5B%7B%22name%22:%22reject%22,%22type%22:%22button%22,%22value%22:%22reject%22%7D%5D,%22callback_id%22:%22eyJjaGFubmVsIjoiREROR0oyU0xFIiwiaW50ZXJ2YWwiOnsiZW5kIjo1NjgxMjMyMDAsInN0YXJ0Ijo1NjgwMzY4MDB9LCJyZWFzb24iOiJob2xpZGF5IiwicmVxdWVzdGVyIjoiSkFLS09XIiwic3RhdHVzIjowfQ%3D%3D%22,%22original_message%22:%7B%22text%22:%22Some%20text%22%7D,%22response_url%22:%22https:%5C/%5C/api.absencebot.com%5C/slack%22,%22user%22:%7B%22id%22:%22U456V5Q4E%22%7D%7D
 
 200 OK
-Content-Length: 459
+Content-Length: 461
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -14,4 +14,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-{"attachments":[{"color":"#439bdf","fallback":"Absence acceptance interactive message","fields":[{"short":true,"title":"Reason","value":"holiday 🏖"},{"short":true,"title":"Interval","value":"Jan 1 - 2, 2019"}],"text":"Your approval is requested here. <@JAKKOW> will be unavailable because of _holidays_ planned","title":"Approval Request"},{"text":"<@U456V5Q4E> rejected this request.","ts":1546344000}],"replace_original":true,"response_type":"ephemeral"}
+{"attachments":[{"color":"#439bdf","fallback":"Absence acceptance interactive message","fields":[{"short":true,"title":"Reason","value":"holiday 🏖"},{"short":true,"title":"Interval","value":"Jan 1 ‐ 2, 2019"}],"text":"Your approval is requested here. <@JAKKOW> will be unavailable because of _holidays_ planned","title":"Approval Request"},{"text":"<@U456V5Q4E> rejected this request.","ts":1546344000}],"replace_original":true,"response_type":"ephemeral"}

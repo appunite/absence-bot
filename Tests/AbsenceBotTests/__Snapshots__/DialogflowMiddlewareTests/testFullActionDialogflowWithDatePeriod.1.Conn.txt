@@ -4,7 +4,7 @@ Authorization: Basic aGVsbG86d29ybGQ=
 {"originalDetectIntentRequest":{"payload":{"data":{"event":{"channel":"DDNGJ2SLE","user":"U456V5Q4E"}}}},"queryResult":{"action":"absenceday.absenceday-fill-date","outputContexts":[{"lifespanCount":5,"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-followup","parameters":{"date-period":{"endDate":"2019-02-18T14:49:09+00:00","startDate":"2019-02-17T12:00:00+00:00"},"reason":"remote"}}]},"session":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991"}
 
 200 OK
-Content-Length: 361
+Content-Length: 363
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -13,4 +13,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-{"fulfillmentText":"So, you're planning *remote* work Feb 17 - 18, 2019, correct?","outputContexts":[{"lifespanCount":2,"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-full","parameters":{"date-period":{"endDate":"2019-02-18T14:49:09+00:00","startDate":"2019-02-17T12:00:00+00:00"},"reason":"remote"}}]}
+{"fulfillmentText":"So, you're planning *remote* work Feb 17 ‐ 18, 2019, correct?","outputContexts":[{"lifespanCount":2,"name":"projects\/absencebot\/agent\/sessions\/676f5d76-6466-4fa6-9df4-659ba7bad991\/contexts\/absenceday-full","parameters":{"date-period":{"endDate":"2019-02-18T14:49:09+00:00","startDate":"2019-02-17T12:00:00+00:00"},"reason":"remote"}}]}

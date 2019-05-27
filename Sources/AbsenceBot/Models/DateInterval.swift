@@ -36,14 +36,12 @@ extension DateInterval {
       ? fullDaysDateIntervalFormatter(tz)
       : dateTimeDateIntervalFormatter(tz)
 
-    let raw = formatter
+    return formatter
       .string(from: self.start, to: self.end)
-      
-      // fixing issue with tests on linux
-      .replacingOccurrences(of: " ", with: " ")
-      .replacingOccurrences(of: "–", with: "-")
 
-    return raw
+      // fixing issue with tests on linux
+      .replacingOccurrences(of: "\u{2009}", with: "\u{0020}") // Thin Space -> SPACE
+      .replacingOccurrences(of: "\u{2013}", with: "\u{2010}") // EN DASH -> HYPHEN
   }
 }
 
