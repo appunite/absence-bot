@@ -45,7 +45,7 @@ When your request is ready (and after your verification) it’s posted on a dedi
 
 Accepted requests are added to our internal Google Calendar with a proper title (showing name of requester and reason of absence), period of time and participants (absence requester and absence approver). Moreover, everyone in the company has read-only access to this calendar so everybody can see others absences in advance.
 
-<img src=".images/screen4.png" height="400" alt="Screenshot"/>
+<img src=".images/screen4.png" height="300" alt="Screenshot"/>
 
 ## Tools 
 
