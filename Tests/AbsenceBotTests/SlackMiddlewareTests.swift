@@ -23,7 +23,6 @@ class SlackMiddlewareTests: TestCase {
   }
 
   func testAcceptedNotificationMessage() {
-    #if !os(Linux)
     update(
       &Current,
       \.slack.postMessage .~ {
@@ -36,7 +35,6 @@ class SlackMiddlewareTests: TestCase {
     let conn = connection(from: webhook)
 
     _ = appMiddleware(conn).perform()
-    #endif
   }
 
   func testSilentlyAcceptedInteractiveMessage() {
@@ -47,7 +45,6 @@ class SlackMiddlewareTests: TestCase {
   }
   
   func testSilentlyAcceptedNotificationMessage() {
-    #if !os(Linux)
     update(
       &Current,
       \.slack.postMessage .~ {
@@ -60,7 +57,6 @@ class SlackMiddlewareTests: TestCase {
     let conn = connection(from: webhook)
     
     _ = appMiddleware(conn).perform()
-    #endif
   }
 
   func testRejectedInteractiveMessage() {
@@ -71,7 +67,6 @@ class SlackMiddlewareTests: TestCase {
   }
 
   func testRejectedNotificationMessage() {
-    #if !os(Linux)
     update(
       &Current,
       \.slack.postMessage .~ {
@@ -84,7 +79,6 @@ class SlackMiddlewareTests: TestCase {
     let conn = connection(from: webhook)
     
     _ = appMiddleware(conn).perform()
-    #endif
   }
 
   func testGoogleCalendarEventRange() {
