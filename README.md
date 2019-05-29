@@ -17,9 +17,9 @@ AbsenceBot is already working on production since end of February 2019. We feel 
 
 ## Implementation
 
-In the beginning, we have set specific goals when designing the solution: it needs to be fast, simple and natural. We’ve started to think about how we can make the process better and we decided that building chatbot which uses machine learning tools will be the best option and give us possibility to learn new things.
+In the beginning, we have set specific goals when designing the solution: it has to be fast, simple and feel natural. We’ve started to think about how we can make the process better and we decided that building chatbot that uses machine learning tools will be the best option that additionally would give us the possibility to extend our knowledge of ML and chatbots.
 
-This still was a side job project, and we didn't want to spend to much time for development on it. We've decided to iterate fast and use some existing tools. The crucial part of any chatbot is [Natural Language Processing](https://en.wikipedia.org/wiki/Natural_language_processing) (the process of  taking input provided by users and extract meaning/context out of it). To solve this problem we’ve used [Dialogflow](https://dialogflow.com), which is simple but advance tool that allows to understand human conversation. As a web framework we've used [pointfreeco/swift-web](https://github.com/pointfreeco/swift-web). It’s nice swift-lang web framework using functional approach.
+We treated this as a side project, and we didn't want to spend too much time on creating it. We've decided to iterate fast and use some existing tools. The crucial part of any chatbot is [Natural Language Processing](https://en.wikipedia.org/wiki/Natural_language_processing) (the process of  taking input provided by users and extract meaning/context out of it). To solve this challenge we’ve decided to use [Dialogflow](https://dialogflow.com). Dialogflow is a simple but advanced tool that allows to capture and interpret human conversation. As a web framework we've used [pointfreeco/swift-web](https://github.com/pointfreeco/swift-web). It’s nice swift-lang web framework using functional approach.
 
 We’ve defined 5 general categories of absence:
 * illness: you’re sick and you don’t plan to work at all, you’re are unavailable 
@@ -30,20 +30,20 @@ We’ve defined 5 general categories of absence:
 
 ## In action 
 
-To add an absence simply start a conversation with @AbsenceBot on Slack. All the chatbot is doing, is extracting out of the context two information: **reason** and **period** of yours absence. If some pieces of information are missing, it will provide a specific question that helps him get that information. 
+To add an absence our team member simply starts a conversation with @AbsenceBot on Slack. All the chatbot is doing, is extracting two information from the context: **reason** and **period** of your absence. If some pieces of information are missing, it will provide additional question that helps him get that information. 
 
-Just start typing and answer the question, or tell what you need, like in a normal human conversation e.g.:
+Our team member starts to type and answer chatbot questions He/She can also simply tell what they need, like in a normal human conversation e.g.:
 
-* I’m not feeling good and will take off till the end of the week,
-* I’m going on conference between 3-5 May
+* I’m not feeling good and will take time off till the end of the week,
+* I’m going to a conference between 3-5 May.
 
 <img src=".images/screen1.png" height="400" alt="Screenshot"/>
 
-Your request when ready (and after your verification) is posted on a dedicated private channel where all supervisors and PMs has access to and can discuss in small group about employee absence using Slack threads. Those requests can be approved or rejected by tapping on an interactive buttons. Whenever accepted or rejected, employee is informed about the status in feedback message.
+When your request is ready (and after your verification) it’s posted on a dedicated private channel where all supervisors and PMs has access to and can discuss in small group about employee absence using Slack threads. Those requests can be approved or rejected by tapping on interactive buttons. Whenever accepted or rejected, employee is informed about the status in a feedback message.
 
 <img src=".images/screen2.png" height="400" alt="Screenshot"/>
 
-Accepted requests are added to Google Calendar with a proper title (showing name of requester and reason of absence), proper period and participants (absence requester and absence approver). Moreover, everyone in the company has read-only access to this calendar so everybody can see others absences in advance.
+Accepted requests are added to our internal Google Calendar with a proper title (showing name of requester and reason of absence), period of time and participants (absence requester and absence approver). Moreover, everyone in the company has read-only access to this calendar so everybody can see others absences in advance.
 
 <img src=".images/screen4.png" height="400" alt="Screenshot"/>
 
