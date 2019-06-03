@@ -12,8 +12,8 @@
 
 # Idea
 
-This is an side project that I've been working on to play with Server-Side Swift. General idea of this tool is to simplify process of taking absence using Slack.
-AbsenceBot is already working on production since end of February 2019. We feel that simple chatbot improve our internal process of taking absence at AppUnite. It’s convenient, easy and natural for everyone. As a web framework I've used [pointfreeco/swift-web](https://github.com/pointfreeco/swift-web).✌
+This is a side project that I've been working on to play with Server-Side Swift. General idea of this tool is to simplify process of taking absence using Slack.
+AbsenceBot has already been working on production since the end of February 2019. We feel that a simple chatbot improves our internal process of taking absence in AppUnite. It’s convenient, easy and natural for everyone. As a web framework I've used [pointfreeco/swift-web](https://github.com/pointfreeco/swift-web).✌
 
 ## Implementation
 
