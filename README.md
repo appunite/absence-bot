@@ -32,7 +32,7 @@ We’ve defined 5 general categories of absence:
 
 To add an absence our team member simply starts a conversation with @AbsenceBot on Slack. All the chatbot does, is extract two pieces of information from the context: **reason** and **period** of your absence. If some pieces of information are missing, it will provide an additional question that helps it get this information. 
 
-Our team member starts to type and answer chatbot questions He/She can also simply tell what they need, like in an ordinary human conversation e.g.:
+Our team member starts to type and answer chatbot questions. He/She can also simply tell what they need, like in an ordinary human conversation e.g.:
 
 * I’m not feeling good and will take time off till the end of the week,
 * I’m going to a conference between 3-5 May.
