@@ -52,7 +52,7 @@ Accepted requests are added to our internal Google Calendar with a proper title 
 ### Dialogflow
 
 Dialogflow is human–computer interaction technologies based on natural language conversations.
-You can find exported model in this repo [here](./Dialogflow.zip)
+You can find exported model in this repo [here](./au-absence-bot-prod-dialogflow.zip)
 
 ### Slack
 
