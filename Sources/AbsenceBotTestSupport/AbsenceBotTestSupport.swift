@@ -67,7 +67,8 @@ extension GoogleCalendar.Event {
     description: nil,
     start: .mock,
     end: .mock,
-    attendees: [.mock]
+    attendees: [.mock],
+    transparency: .transparent
   )
 }
 

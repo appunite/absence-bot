@@ -104,7 +104,8 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     description: nil,
     start: startDateTime(from: absence.interval),
     end: endDateTime(from: absence.interval),
-    attendees: [requester, !absence.isSilentlyAccepted ? reviewer : nil].compactMap(id)
+    attendees: [requester, !absence.isSilentlyAccepted ? reviewer : nil,].compactMap(id),
+    transparency: .transparent
   )
 }
 

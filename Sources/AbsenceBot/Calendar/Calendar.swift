@@ -70,6 +70,12 @@ public struct GoogleCalendar {
     public var start: DateTime
     public var end: DateTime
     public var attendees: [Actor]?
+    public var transparency: Transparency?
+
+    public enum Transparency: String, Codable {
+      case opaque
+      case transparent
+    }
 
     public struct Actor: Codable, Equatable {
       public var email: String
