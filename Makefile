@@ -36,6 +36,20 @@ define DOTENV_ERROR
 endef
 export DOTENV_ERROR
 
+# colortheme
+
+COLOR_THEMES_PATH = $(HOME)/Library/Developer/Xcode/UserData/FontAndColorThemes
+COLOR_THEME = $(COLOR_THEMES_PATH)/Point-Free.xccolortheme
+
+colortheme:
+	@echo "  ⚠️  Installing \033[1mPoint-Free.xcolortheme\033[0m..."
+	@mkdir -p $(COLOR_THEMES_PATH)
+	@cp -r .PointFree.xccolortheme $(COLOR_THEME)
+	@echo "  ✅ Installed!"
+
+uninstall-colortheme:
+	rm -r $(COLOR_THEME)
+
 # sourcery
 
 sourcery: sourcery-routes sourcery-tests
