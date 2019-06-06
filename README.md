@@ -12,7 +12,7 @@
 
 # Idea
 
-This is a side project that I've been working on to play with Server-Side Swift. General idea of this tool is to simplify process of taking absence using Slack.
+This is a side project that I've been working on to play with Server-Side Swift. General idea of this tool is to simplify the process of taking absence by using Slack.
 AbsenceBot has already been working on production since the end of February 2019. We feel that a simple chatbot improves our internal process of taking absence in AppUnite. It’s convenient, easy and natural for everyone. As a web framework I've used [pointfreeco/swift-web](https://github.com/pointfreeco/swift-web).✌
 
 ## Implementation
@@ -51,20 +51,20 @@ Accepted requests are added to our internal Google Calendar with a proper title 
 
 ### Dialogflow
 
-Dialogflow is human–computer interaction technologies based on natural language conversations.
+Dialogflow is human–computer interaction technology based on natural language processing.
 You can find exported model in this repo [here](./Dialogflow.zip)
 
 ### Slack
 
-Right now I'm just supporting Slack as Dialogflow's channel of communication. But this is easy to extend for other like WhatApp or Messenger.
+Right now I'm just supporting Slack as Dialogflow's channel of communication. But it will be easy to extend for other channels such as WhatApp or Messenger.
 
 ### Google Calendar
 
-If event is approved, the app is adding an event into Google Calendar.
+If a particular event is approved, the app is adding an event to Google Calendar.
 
 ## ToDo
 
-I think I'd be nice to extend this Readme with information how setup all services like Google Calendar or Dialogflow and deploy this on Heroku.
+I think it would  be nice to extend this Readme with information how to setup all services like Google Calendar or Dialogflow and deploy this on Heroku.
 
 ## About
 
