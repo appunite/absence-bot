@@ -15,8 +15,8 @@ extension DateInterval {
     let sortedDates = [dates.0, dates.1]
       .sorted(by: <)
     
-    self.start = tz.flatMap { sortedDates.first!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.first!
-    self.end = tz.flatMap { sortedDates.last!.dateByReplacingTimeZone(timeZone: $0) } ?? sortedDates.last!
+    self.start = tz.flatMap { sortedDates.first!.date(byReplacingTimeZone: $0) } ?? sortedDates.first!
+    self.end = tz.flatMap { sortedDates.last!.date(byReplacingTimeZone: $0) } ?? sortedDates.last!
   }
 
   public var isAllDay: Bool {

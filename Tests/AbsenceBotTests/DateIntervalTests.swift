@@ -18,7 +18,6 @@ class DateIntervalTests: XCTestCase {
   func testDateIntervalWithTimeStartAndEnd() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
 
@@ -37,7 +36,6 @@ class DateIntervalTests: XCTestCase {
   func testDateIntervalWithTimePeriod() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -57,7 +55,6 @@ class DateIntervalTests: XCTestCase {
   func testDateIntervalWithJustDate() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -67,14 +64,13 @@ class DateIntervalTests: XCTestCase {
     let dateInterval = params
       .dateInterval(tz: TimeZone(secondsFromGMT: 2 * 3600)!)
     
-    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1559815200))
-    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1559815200))
+    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1559822400))
+    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1559822400))
   }
   
   func testDateIntervalWithDateTimeStartAndEnd() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -85,14 +81,13 @@ class DateIntervalTests: XCTestCase {
     let dateInterval = params
       .dateInterval(tz: TimeZone(secondsFromGMT: 2 * 3600)!)
     
-    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1559800800))
-    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1559829600))
+    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1559808000))
+    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1559836800))
   }
 
   func testDateIntervalWithDatePeriod() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -111,7 +106,6 @@ class DateIntervalTests: XCTestCase {
   func testDateIntervalWithDateStartAndEnd() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -129,7 +123,6 @@ class DateIntervalTests: XCTestCase {
   func testDateIntervalWithDateTimeStartAndDateEnd() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -140,14 +133,13 @@ class DateIntervalTests: XCTestCase {
     let dateInterval = params
       .dateInterval(tz: TimeZone(secondsFromGMT: 2 * 3600)!)
     
-    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1560146400))
-    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1560319200))
+    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1560153600))
+    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1560326400))
   }
 
   func testDateIntervalWithDateStartAndDateTimeEnd() {
     update(
       &Current,
-      \.calendarTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! },
       \.dialogflowTimeZone .~ { TimeZone(secondsFromGMT: 2 * 3600)! }
     )
     
@@ -158,7 +150,7 @@ class DateIntervalTests: XCTestCase {
     let dateInterval = params
       .dateInterval(tz: TimeZone(secondsFromGMT: 2 * 3600)!)
     
-    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1560146400))
-    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1560319200))
+    XCTAssertEqual(dateInterval?.start, Date(timeIntervalSince1970: 1560153600))
+    XCTAssertEqual(dateInterval?.end, Date(timeIntervalSince1970: 1560326400))
   }
 }
