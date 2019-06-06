@@ -8,7 +8,7 @@ import SnapshotTesting
 import AbsenceBotTestSupport
 @testable import AbsenceBot
 
-class DateIntervalTests: XCTestCase {
+class DateIntervalTests: TestCase {
 
   override func setUp() {
     super.setUp()

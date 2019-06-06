@@ -9,6 +9,18 @@ extension AppMiddlewareTests {
     ("testWithHttps", testWithHttps)
   ]
 }
+extension DateIntervalTests {
+  static var allTests: [(String, (DateIntervalTests) -> () throws -> Void)] = [
+    ("testDateIntervalWithTimeStartAndEnd", testDateIntervalWithTimeStartAndEnd),
+    ("testDateIntervalWithTimePeriod", testDateIntervalWithTimePeriod),
+    ("testDateIntervalWithJustDate", testDateIntervalWithJustDate),
+    ("testDateIntervalWithDateTimeStartAndEnd", testDateIntervalWithDateTimeStartAndEnd),
+    ("testDateIntervalWithDatePeriod", testDateIntervalWithDatePeriod),
+    ("testDateIntervalWithDateStartAndEnd", testDateIntervalWithDateStartAndEnd),
+    ("testDateIntervalWithDateTimeStartAndDateEnd", testDateIntervalWithDateTimeStartAndDateEnd),
+    ("testDateIntervalWithDateStartAndDateTimeEnd", testDateIntervalWithDateStartAndDateTimeEnd)
+  ]
+}
 extension DialogflowMiddlewareTests {
   static var allTests: [(String, (DialogflowMiddlewareTests) -> () throws -> Void)] = [
     ("testFillDateContextDialogflow", testFillDateContextDialogflow),
@@ -25,6 +37,15 @@ extension EnvVarTests {
 extension ReportMiddlewareTests {
   static var allTests: [(String, (ReportMiddlewareTests) -> () throws -> Void)] = [
     ("testBasicReportGeneration", testBasicReportGeneration)
+  ]
+}
+extension ReportResultTests {
+  static var allTests: [(String, (ReportResultTests) -> () throws -> Void)] = [
+    ("testReasonRegexParsingWithFullNameAndEmoji", testReasonRegexParsingWithFullNameAndEmoji),
+    ("testReasonRegexParsingWithFullNameWithoutEmoji", testReasonRegexParsingWithFullNameWithoutEmoji),
+    ("testReasonRegexParsingWithEmailWithoutEmoji", testReasonRegexParsingWithEmailWithoutEmoji),
+    ("testReasonRegexParsingWithEmailWithoutEmojiAndSomeExtraSuffix", testReasonRegexParsingWithEmailWithoutEmojiAndSomeExtraSuffix),
+    ("testReasonRegexParsingWithNameWithoutEmoji", testReasonRegexParsingWithNameWithoutEmoji)
   ]
 }
 extension SlackMiddlewareTests {
@@ -44,9 +65,11 @@ extension SlackMiddlewareTests {
 // swiftlint:disable trailing_comma
 XCTMain([
   testCase(AppMiddlewareTests.allTests),
+  testCase(DateIntervalTests.allTests),
   testCase(DialogflowMiddlewareTests.allTests),
   testCase(EnvVarTests.allTests),
   testCase(ReportMiddlewareTests.allTests),
+  testCase(ReportResultTests.allTests),
   testCase(SlackMiddlewareTests.allTests),
 ])
 // swiftlint:enable trailing_comma

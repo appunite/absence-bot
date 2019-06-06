@@ -8,7 +8,7 @@ import SnapshotTesting
 import AbsenceBotTestSupport
 @testable import AbsenceBot
 
-class ReportResultTests: XCTestCase {
+class ReportResultTests: TestCase {
   func testReasonRegexParsingWithFullNameAndEmoji() {
     let event = GoogleCalendar.Event.mock
       |> \.summary .~ "Jan Kowalski - school 🎓"
