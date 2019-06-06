@@ -143,10 +143,12 @@ func createEvent(with token: GoogleCalendar.AccessToken, event: GoogleCalendar.E
 }
 
 func fetchEvents(with token: GoogleCalendar.AccessToken, period: DateInterval) -> DecodableRequest<GoogleCalendar.EventsEnvelope> {
-  let bodyParts = [
+  let bodyParts: [String: Any] = [
     "timeMin": dateTimeFormatter.string(from: period.start),
     "timeMax": dateTimeFormatter.string(from: period.end),
-    "maxResults": "2500",
+    "maxResults": 2500,
+    "singleEvents": true,
+    "showDeleted": false,
     "fields": "items(attendees(displayName,email),created,description,end,id,start,summary,updated),nextPageToken,nextSyncToken"
   ]
 
