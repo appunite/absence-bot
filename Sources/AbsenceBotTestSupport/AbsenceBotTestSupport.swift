@@ -342,7 +342,7 @@ extension ReportResult {
 }
 
 extension TimeZone {
-  public static let mock = TimeZone(secondsFromGMT: 0)!
+  public static let mock = TimeZone.gmt
 }
 
 extension UUID {
