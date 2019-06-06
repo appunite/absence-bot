@@ -99,6 +99,12 @@ public func unzurry<A>(_ a: A) -> () -> A {
   return { a }
 }
 
+// TimeZone
+
+extension TimeZone {
+  static let gmt = TimeZone(secondsFromGMT: 0)!
+}
+
 // Calendar
 
 extension Calendar {
@@ -106,7 +112,7 @@ extension Calendar {
     |> \.timeZone .~ TimeZone.current
   
   static let gmtTimeZoneCalendar = Calendar(identifier: .iso8601)
-    |> \.timeZone .~ TimeZone(secondsFromGMT: 0)!
+    |> \.timeZone .~ TimeZone.gmt
 }
 
 // DateFormatter
@@ -119,12 +125,12 @@ public let iso8601 = ((\DateFormatter.calendar) .~ Calendar(identifier: .iso8601
 
 extension Date {
   internal func startOfDay(calendar: Calendar? = nil) -> Date {
-    return (calendar ?? Calendar.currentTimeZoneCalendar)
+    return (calendar ?? Calendar.gmtTimeZoneCalendar)
       .startOfDay(for: self)
   }
   
   internal func endOfDay(calendar: Calendar? = nil) -> Date {
-    let _calendar = calendar ?? Calendar.currentTimeZoneCalendar
+    let _calendar = calendar ?? Calendar.gmtTimeZoneCalendar
     
     let endComponents = DateComponents()
       |> \.day .~ 1
@@ -136,7 +142,7 @@ extension Date {
 }
 
 extension Date {
-  internal func dateByReplacingTime(from sourceDate: Date) -> Date? {
+  internal func date(byReplacingTime sourceDate: Date) -> Date? {
     let calendar = Calendar.gmtTimeZoneCalendar
     
     // get dates components
@@ -148,7 +154,7 @@ extension Date {
     // create combined date components
     let combinedDateComponents = DateComponents(
       calendar: calendar,
-      timeZone: TimeZone(secondsFromGMT: 0),
+      timeZone: TimeZone.gmt,
       year: dateComponentsA.year,
       month: dateComponentsA.month,
       day: dateComponentsA.day,
@@ -160,7 +166,7 @@ extension Date {
     return calendar.date(from: combinedDateComponents)
   }
   
-  internal func dateByReplacingTimeZone(timeZone: TimeZone) -> Date? {
+  internal func date(byReplacingTimeZone timeZone: TimeZone) -> Date? {
     var calendar = Calendar(identifier: .iso8601)
       |> \.timeZone .~ Current.dialogflowTimeZone()
 

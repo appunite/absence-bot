@@ -75,7 +75,7 @@ private func fulfillmentMiddleware(
       guard let reason = followupContext.parameters.reason.flatMap(Absence.Reason.init)
         else { return middleware <| conn.map(const(.missingReason .*. nil)) }
       
-      guard let interval = dateInterval(parameters: followupContext.parameters, tz: user.tz)
+      guard let interval = followupContext.parameters.dateInterval(tz: user.tz)
         else { return middleware <| conn.map(const(.missingInterval .*. nil)) }
 
       if case .accept = payload.action {
@@ -101,65 +101,92 @@ private func fulfillmentMiddleware(
   }
 }
 
-private func dateInterval(parameters: Context.Parameters, tz: TimeZone) -> DateInterval? {
-  // single day absence
-  if let date = parameters.date {
-    // extend day with time information
-    if let timeStart = parameters.timeStart, let timeEnd = parameters.timeEnd {
+extension Context.Parameters {
+  public func dateInterval(tz: TimeZone) -> DateInterval? {
+    // single day absence
+    if let date = self.date {
+      // extend day with time information
+      if let timeStart = self.timeStart, let timeEnd = self.timeEnd {
+        return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+          date.replace(timeZone: TimeZone.gmt, time: timeStart),
+          date.replace(timeZone: TimeZone.gmt, time: timeEnd)
+        )
+      }
+      
+      // extend day with time information
+      if let timePeriod = self.timePeriod {
+        return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+          date.replace(timeZone: TimeZone.gmt, time: timePeriod.startTime),
+          date.replace(timeZone: TimeZone.gmt, time: timePeriod.endTime)
+        )
+      }
+      
+      // if there is no information about time, just treat this as full day
       return zip(with: { .init(dates: ($0, $1), tz: tz) })(
-        date.dateByReplacingTime(from: timeStart),
-        date.dateByReplacingTime(from: timeEnd)
+        date.replace(timeZone: TimeZone.gmt, time: nil),
+        date.replace(timeZone: TimeZone.gmt, time: nil)
       )
     }
-
-    // extend day with time information
-    if let timePeriod = parameters.timePeriod {
+    
+    // date time period
+    if let start = self.dateTimeStart, let end = self.dateTimeEnd {
       return zip(with: { .init(dates: ($0, $1), tz: tz) })(
-        date.dateByReplacingTime(from: timePeriod.startTime),
-        date.dateByReplacingTime(from: timePeriod.endTime)
+        start.replace(timeZone: TimeZone.gmt, time: nil),
+        end.replace(timeZone: TimeZone.gmt, time: nil)
       )
     }
+    
+    // period absence
+    if let period = self.datePeriod {
+      // sometimes dialogflow returns diffrent time, let's make it common to treat period as full days
+      return zip(with: { .init(dates: ($0.startOfDay(), $1.startOfDay()), tz: tz) })(
+        period.startDate.replace(timeZone: TimeZone.gmt, time: Date()),
+        period.endDate.replace(timeZone: TimeZone.gmt, time: Date())
+      )
+    }
+    
+    // date period
+    if let start = self.dateStart, let end = self.dateEnd {
+      return zip(with: { .init(dates: ($0.startOfDay(), $1.startOfDay()), tz: tz) })(
+        start.replace(timeZone: TimeZone.gmt, time: Date()),
+        end.replace(timeZone: TimeZone.gmt, time: Date())
+      )
+    }
+    
+    // mixed date & date time period
+    if let start = self.dateTimeStart, let end = self.dateEnd {
+      // todo: I need to change end-time to 17:00
+      return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+        start.replace(timeZone: TimeZone.gmt, time: nil),
+        end.replace(timeZone: TimeZone.gmt, time: nil)
+      )
+    }
+    
+    // mixed date & date time period
+    if let start = self.dateStart, let end = self.dateTimeEnd {
+      // todo: I need to change start-time to 8:00
+      return zip(with: { .init(dates: ($0, $1), tz: tz) })(
+        start.replace(timeZone: TimeZone.gmt, time: nil),
+        end.replace(timeZone: TimeZone.gmt, time: nil)
+      )
+    }
+    
+    // some error occured
+    return nil
+  }
+}
 
-    // if there is no information about time, just treat this as full day
-    return .init(dates: (date, date), tz: tz)
+extension Date {
+  internal func replace(timeZone: TimeZone, time: Date?) -> Date? {
+    let timezoneFix = self
+      .date(byReplacingTimeZone: timeZone)
+    
+    guard let time = time else {
+      return timezoneFix
+    }
+    
+    return  timezoneFix?.date(byReplacingTime: time)
   }
-  
-  // date time period
-  if let start = parameters.dateTimeStart, let end = parameters.dateTimeEnd {
-    return .init(dates: (start, end), tz: tz)
-  }
-  
-  // period absence
-  if let period = parameters.datePeriod {
-    // sometimes dialogflow returns diffrent time, let's make it common to treat period as full days
-    return zip(with: { .init(dates: ($0, $1), tz: tz) })(
-      period.startDate.dateByReplacingTime(from: Date().startOfDay()),
-      period.endDate.dateByReplacingTime(from: Date().startOfDay())
-    )
-  }
-  
-  // date period
-  if let start = parameters.dateStart, let end = parameters.dateEnd {
-    return zip(with: { .init(dates: ($0, $1), tz: tz) })(
-      start.dateByReplacingTime(from: Date().startOfDay()),
-      end.dateByReplacingTime(from: Date().startOfDay())
-    )
-  }
-  
-  // mixed date & date time period
-  if let start = parameters.dateTimeStart, let end = parameters.dateEnd {
-    // todo: I need to change end-time to 17:00
-    return .init(dates: (start, end), tz: tz)
-  }
-  
-  // mixed date & date time period
-  if let start = parameters.dateStart, let end = parameters.dateTimeEnd {
-    // todo: I need to change start-time to 8:00
-    return .init(dates: (start, end), tz: tz)
-  }
-  
-  // some error occured
-  return nil
 }
 
 extension Webhook {
