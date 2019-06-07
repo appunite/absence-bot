@@ -105,7 +105,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     start: startDateTime(from: absence.interval),
     end: endDateTime(from: absence.interval),
     attendees: [requester, !absence.isSilentlyAccepted ? reviewer : nil,].compactMap(id),
-    transparency: .transparent
+    transparency: absence.reason.transparency
   )
 }
 
@@ -127,6 +127,23 @@ private func endDateTime(from interval: DateInterval) -> GoogleCalendar.Event.Da
     date: interval.isAllDay ? nextDay(interval.end) : nil,
     dateTime: !interval.isAllDay ? interval.end : nil
   )
+}
+
+private extension Absence.Reason {
+  var transparency: GoogleCalendar.Event.Transparency {
+    switch self {
+    case .remote:
+      return .transparent
+    case .holiday:
+      return .opaque
+    case .illness:
+      return .transparent
+    case .conference:
+      return .opaque
+    case .school:
+      return .opaque
+    }
+  }
 }
 
 extension GoogleCalendar.Event.Actor {
