@@ -262,7 +262,7 @@ extension Slack.Message {
   }
 
   public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
-    return .init(text: "Good news! Your absence request was approved by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown"). I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar.\nTo make it easier for your team members to track your absence, copy the event to the project calendar. More info <https://github.com/appunite/absence-bot#Tips&Tricks|here>.", channel: absence.channel, attachments: [])
+    return .init(text: "Good news! Your absence request was approved by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown"). I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar.\nTo make it easier for your team members to track your absence, copy the event to the project calendar. More info <https://github.com/appunite/absence-bot#tipstricks|here>.", channel: absence.channel, attachments: [])
   }
 }
 
