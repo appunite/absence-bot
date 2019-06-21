@@ -2,6 +2,7 @@ import Foundation
 import Either
 import Optics
 import Prelude
+import Tagged
 
 enum JSONError: Error {
   case error(String, Error)

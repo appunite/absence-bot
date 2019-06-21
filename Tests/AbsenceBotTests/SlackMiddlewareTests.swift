@@ -37,28 +37,6 @@ class SlackMiddlewareTests: TestCase {
     _ = appMiddleware(conn).perform()
   }
 
-  func testSilentlyAcceptedInteractiveMessage() {
-    let webhook = request(to: .slack(.silentAccept)) |> signRequest
-    let conn = connection(from: webhook)
-    
-    assertSnapshot(matching: conn |> appMiddleware, as: .ioConn)
-  }
-  
-  func testSilentlyAcceptedNotificationMessage() {
-    update(
-      &Current,
-      \.slack.postMessage .~ {
-        assertSnapshot(matching: $0, as: .dump)
-        return pure(pure(.mock))
-      }
-    )
-    
-    let webhook = request(to: .slack(.silentAccept)) |> signRequest
-    let conn = connection(from: webhook)
-    
-    _ = appMiddleware(conn).perform()
-  }
-
   func testRejectedInteractiveMessage() {
     let webhook = request(to: .slack(.reject)) |> signRequest
     let conn = connection(from: webhook)
@@ -104,31 +82,14 @@ class SlackMiddlewareTests: TestCase {
     
     _ = appMiddleware(conn).perform()
   }
-  
-  func testGoogleCalendarEventAttendeesCountForSilectAcceptAction() {
-    let action = InteractiveMessageAction.silentAccept
-    update(
-      &Current,
-      \.calendar.createEvent .~ { _, event in
-        // on silent accept there should be one attendee (requester)
-        XCTAssertEqual(event.attendees?.count, 1)
-        return pure(.mock)
-      }
-    )
-    
-    let webhook = request(to: .slack(action)) |> signRequest
-    let conn = connection(from: webhook)
-    
-    _ = appMiddleware(conn).perform()
-  }
 
   func testGoogleCalendarEventAttendeesCountForNormalAcceptAction() {
     let action = InteractiveMessageAction.accept
     update(
       &Current,
       \.calendar.createEvent .~ { _, event in
-        // on normal accept there should be two attendees (requester & reviewer)
-        XCTAssertEqual(event.attendees?.count, 2)
+        // on silent accept there should be one attendee (requester)
+        XCTAssertEqual(event.attendees?.count, 1)
         return pure(.mock)
       }
     )

@@ -47,6 +47,24 @@ Accepted requests are added to our internal Google Calendar with a proper title 
 
 <img src=".images/screen4.png" height="300" alt="Screenshot"/>
 
+## Tips&Tricks
+
+Project calendar can be very useful. It can really helps with tracking important events related to the project, such as: certificates expiration, client’s meetings, release deadlines or team member absences. It brings us a lot of benefits, like transparency and improve our work planning.
+
+### Absences
+
+At AppUnite, AbsenceBot is adding all absences into one internal calendar. The amount of events collected by this calendar is sometimes overwhelming, and sometime interesting information can be hidden. That’s why when absence is accepted it’s better to make a copy of an event to dedicated project’s calendar, to better track those types of event by team members.
+
+To do so, there are no needed additional changes in actual process of taking absences, just few additional steps. After your absence is accepted, chat bot is automatically creating a calendar event and informs you about it in a message with appropriate link.
+
+Steps:
+
+1. Open Google Calendar by tapping event link in AbsenceBot feedback message,
+2. Tap on settings button in Google’s Calendar Event detail page
+3. Tap on “Copy to {calendar}” to copy event to desired project calendar — you can copy to multiple calendars, if necessary
+
+By doing so you inform your team members about you absences, and everything is well organized. The main benefit of this is that you don’t have to deal with clumsy global absences view anymore in order to check your team members absences.
+
 ## Tools 
 
 ### Dialogflow

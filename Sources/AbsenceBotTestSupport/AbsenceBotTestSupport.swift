@@ -147,12 +147,6 @@ extension InteractiveMessageAction {
       .encode(Absence.interactiveMessageActionPayloadMock)
       .base64EncodedString()) ?? "")
 
-  public static let silentAccept = mock
-    |> \.actions .~ [.silentAccept]
-    |> \.callbackId .~ ((try? (JSONEncoder() |> sortedKeysOutputFormatting)
-      .encode(Absence.interactiveMessageActionPayloadMock)
-      .base64EncodedString()) ?? "")
-
   public static let reject = mock
     |> \.actions .~ [.reject]
     |> \.callbackId .~ ((try? (JSONEncoder() |> sortedKeysOutputFormatting)
@@ -248,10 +242,6 @@ extension Slack.Message.Attachment.InteractiveAction {
   public static let accept = mock
     |> \.name .~ "accept"
     |> \.value .~ .accept
-
-  public static let silentAccept = mock
-    |> \.name .~ "silentAccept"
-    |> \.value .~ .silentAccept
 
   public static let reject = mock
     |> \.name .~ "reject"

@@ -96,11 +96,10 @@ deploy-local:
 	@heroku container:login
 	@heroku container:push web -a $(HEROKU_STAGING_APP_NAME)
 	@heroku container:release web -a $(HEROKU_STAGING_APP_NAME)
-
-# @docker login --username=_ --password=$(HEROKU_TOKEN) $(HEROKU_REGISTRY)
-# @docker build -t $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web .
-# @docker push $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web
-# @docker run --rm -e HEROKU_API_KEY=$(HEROKU_TOKEN) wingrunr21/alpine-heroku-cli container:release web --app $(HEROKU_STAGING_APP_NAME)
+# 	@docker login --username=_ --password=$(HEROKU_TOKEN) $(HEROKU_REGISTRY)
+# 	@docker build -t $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web .
+# 	@docker push $(HEROKU_REGISTRY)/$(HEROKU_STAGING_APP_NAME)/web
+# 	@docker run --rm -e HEROKU_API_KEY=$(HEROKU_TOKEN) wingrunr21/alpine-heroku-cli container:release web --app $(HEROKU_STAGING_APP_NAME)
 
 test-linux: sourcery
 	docker-compose up --abort-on-container-exit --build

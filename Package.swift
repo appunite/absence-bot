@@ -10,9 +10,10 @@ let package = Package(
     .executable(name: "Server", targets: ["Server"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/emilwojtaszek/swift-web.git", .branch("swift-5")),
-    .package(url: "https://github.com/pointfreeco/swift-prelude.git", .branch("swift-5")),
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", from: "1.5.0"),
+    .package(url: "https://github.com/emilwojtaszek/swift-web.git", .branch("swift-snapshot-testing-1.5.0")),
+    .package(url: "https://github.com/pointfreeco/swift-prelude.git", .revision("6e426b0")),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing.git", .exact("1.5.0")),
+    .package(url: "https://github.com/pointfreeco/swift-tagged.git", .branch("master")),
     .package(url: "https://github.com/IBM-Swift/Swift-JWT.git", .branch("master"))
   ],
   targets: [
@@ -30,7 +31,8 @@ let package = Package(
         "Optics",
         "Tuple",
         "UrlFormEncoding",
-        "SwiftJWT"
+        "SwiftJWT",
+        "Tagged"
       ]
     ),
 

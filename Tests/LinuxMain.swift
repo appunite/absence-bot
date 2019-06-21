@@ -52,12 +52,9 @@ extension SlackMiddlewareTests {
   static var allTests: [(String, (SlackMiddlewareTests) -> () throws -> Void)] = [
     ("testAcceptedInteractiveMessage", testAcceptedInteractiveMessage),
     ("testAcceptedNotificationMessage", testAcceptedNotificationMessage),
-    ("testSilentlyAcceptedInteractiveMessage", testSilentlyAcceptedInteractiveMessage),
-    ("testSilentlyAcceptedNotificationMessage", testSilentlyAcceptedNotificationMessage),
     ("testRejectedInteractiveMessage", testRejectedInteractiveMessage),
     ("testRejectedNotificationMessage", testRejectedNotificationMessage),
     ("testGoogleCalendarEventRange", testGoogleCalendarEventRange),
-    ("testGoogleCalendarEventAttendeesCountForSilectAcceptAction", testGoogleCalendarEventAttendeesCountForSilectAcceptAction),
     ("testGoogleCalendarEventAttendeesCountForNormalAcceptAction", testGoogleCalendarEventAttendeesCountForNormalAcceptAction)
   ]
 }
