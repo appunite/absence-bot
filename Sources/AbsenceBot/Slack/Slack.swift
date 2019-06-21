@@ -4,6 +4,7 @@ import Optics
 import Prelude
 import UrlFormEncoding
 import HttpPipeline
+import Tagged
 
 public struct Slack {
   /// Fetches a Slack user profile by id.
@@ -102,7 +103,6 @@ public struct Slack {
         public enum Action: String, Codable {
           case accept
           case reject
-          case silentAccept
         }
       }
 
@@ -224,17 +224,13 @@ extension Slack.Message.Attachment {
       .encode(rawAbsence)
       .base64EncodedString()
 
-    return .approvalRequestAttachement(absence: absence, callback: payload, actions: [.accept(), .silentAccept(), .reject()])
+    return .approvalRequestAttachement(absence: absence, callback: payload, actions: [.accept(), .reject()])
   }
 }
 
 extension Slack.Message.Attachment.InteractiveAction {
   public static func accept() -> Slack.Message.Attachment.InteractiveAction {
-    return .init(name: "accept", type: "button", style: "primary", text: "Approve & participate", value: .accept)
-  }
-
-  public static func silentAccept() -> Slack.Message.Attachment.InteractiveAction {
-    return .init(name: "accept", type: "button", style: "normal", text: "Approve & ignore", value: .silentAccept)
+    return .init(name: "accept", type: "button", style: "primary", text: "Approve", value: .accept)
   }
 
   public static func reject() -> Slack.Message.Attachment.InteractiveAction {
@@ -262,30 +258,13 @@ extension Slack.Message {
   }
   
   public static func rejectionNotificationMessage(absence: Absence) -> Slack.Message {
-    return Slack.Message(text: "Bad news! Your absence request was rejected by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown")", channel: absence.channel, attachments: [])
+    return .init(text: "Bad news! Your absence request was rejected by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown")", channel: absence.channel, attachments: [])
   }
-  
-  public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
-    // create generic message
-    let message = Slack.Message(text: "Good news! Your absence request was approved by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown"). I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar", channel: absence.channel, attachments: [])
 
-    // extend message with attachment if illnes
-    switch absence.reason {
-    case .illness:
-      return message
-        |> \.attachments .~ [.text(text: "*Only related to employment contracts.* Your employer’s details you should get your sick note with are:\n ```\(imgeCompanyAddress)```")]
-    default:
-      return message
-    }
+  public static func acceptanceNotificationMessage(absence: Absence) -> Slack.Message {
+    return .init(text: "Good news! Your absence request was approved by \(absence.reviewerId.map { "<@\($0)>" } ?? "@unknown"). I've already created the \(absence.event?.htmlLink.map {"<\($0.absoluteString)|event>"} ?? "event") in absence calendar.\nTo make it easier for your team members to track your absence, copy the event to the project calendar. More info <https://github.com/appunite/absence-bot#Tips&Tricks|here>.", channel: absence.channel, attachments: [])
   }
 }
-
-private let imgeCompanyAddress = """
-IMGE sp. z o.o.
-ul. Droga Dębińska 3a/3
-61-555 Poznań
-NIP 783-172-43-36
-"""
 
 public func slackComputedDigest(key: String, body: Data?, timestamp: String) -> String? {
   let value = "v0:\(timestamp):\(body.flatMap { String(data: $0, encoding: .utf8) } ?? "")"

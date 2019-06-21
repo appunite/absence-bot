@@ -10,7 +10,7 @@ let slackInteractiveMessageActionMiddleware: Middleware<StatusLineOpen, Response
   validateSlackSignature(signature: Current.envVars.slack.secret)
     <<< decodeAbsenceMiddleware
     <<< filter(
-      ^\.isApproved,
+      ^\.isAccepted,
       or: rejectionFallbackMiddleware <| respond(encoder: slackJsonEncoder))
     <<< fetchAcceptanceComponentsMiddleware
     <<< createCalendarEventMiddleware
@@ -40,8 +40,6 @@ extension InteractiveMessageAction {
     switch self.actions.first!.value {
     case .accept:
       return .accepted
-    case .silentAccept:
-      return .silentlyAccepted
     case .reject:
       return .rejected
     }

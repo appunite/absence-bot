@@ -29,7 +29,6 @@ public struct Absence: Codable, Equatable {
     case pending
     case accepted
     case rejected
-    case silentlyAccepted
   }
 
 
@@ -49,17 +48,15 @@ extension Absence {
 }
 
 extension Absence {
-  public var isApproved: Bool {
-    switch status {
-    case .accepted, .silentlyAccepted:
+  public var isAccepted: Bool {
+    if case .accepted = status {
       return true
-    default:
-      return false
     }
+    return false
   }
-
-  public var isSilentlyAccepted: Bool {
-    if case .silentlyAccepted = status {
+  
+  public var isRejected: Bool {
+    if case .rejected = status {
       return true
     }
     return false
@@ -91,8 +88,6 @@ extension Absence {
 internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
   let requester = absence.requester.right
     .map(GoogleCalendar.Event.Actor.init)
-  let reviewer = absence.reviewer?.right
-    .map(GoogleCalendar.Event.Actor.init)
 
   return .init(
     id: nil,
@@ -104,7 +99,7 @@ internal func calendarEvent(from absence: Absence) -> GoogleCalendar.Event {
     description: nil,
     start: startDateTime(from: absence.interval),
     end: endDateTime(from: absence.interval),
-    attendees: [requester, !absence.isSilentlyAccepted ? reviewer : nil,].compactMap(id),
+    attendees: [requester!],
     transparency: absence.reason.transparency
   )
 }

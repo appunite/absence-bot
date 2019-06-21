@@ -1,6 +1,0 @@
-▿ Message
-  - attachments: 0 elements
-  ▿ channel: DDNGJ2SLE
-    - rawValue: "DDNGJ2SLE"
-  ▿ text: Optional<String>
-    - some: "Good news! Your absence request was approved by <@U456V5Q4E>. I\'ve already created the <https://www.google.com/calendar/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc|event> in absence calendar"
