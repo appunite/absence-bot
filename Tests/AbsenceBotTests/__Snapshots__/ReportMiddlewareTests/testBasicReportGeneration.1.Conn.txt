@@ -2,7 +2,7 @@ GET http://localhost:8080/report/2019/3
 Authorization: Basic aGVsbG86d29ybGQ=
 
 200 OK
-Content-Length: 365
+Content-Length: 317
 Content-Type: application/json
 Referrer-Policy: strict-origin-when-cross-origin
 X-Content-Type-Options: nosniff
@@ -11,4 +11,4 @@ X-Frame-Options: SAMEORIGIN
 X-Permitted-Cross-Domain-Policies: none
 X-XSS-Protection: 1; mode=block
 
-[{"createAt":"2019-01-01T00:00:00Z","end":"2018-12-31T12:00:00Z","eventLink":"https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc","id":"1","reason":"holiday","requester":"Jan Kowalski","reviewer":"Jan Kowlaski","start":"2019-01-01T12:00:00Z","updatedAt":"2019-01-01T00:00:00Z"}]
+[{"createAt":1546300800,"end":1546257600,"eventLink":"https:\/\/www.google.com\/calendar\/event?eid=bDZhMjZxNGI2YmJwN2NkaWk4a2ltZDFoYWcgYXBwdW5pdGUuY29tXzU4OW05dnVrOTF2dWJsbDUwamZmY2R1anZzQGc","id":"1","reason":"holiday","requester":"Jan Kowalski","reviewer":"Jan Kowlaski","start":1546344000,"updatedAt":1546300800}]
