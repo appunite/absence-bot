@@ -72,11 +72,12 @@ private func fetchGoogleTokenMiddleware(
 }
 
 private let reportJsonEncoder = JSONEncoder()
-  |> \.dateEncodingStrategy .~ .formatted(csvDateFormatter)
+  |> \.dateEncodingStrategy .~ .formatted(dateFormatter)
   |> sortedKeysOutputFormatting
 
-private let csvDateFormatter = DateFormatter()
-  |> \.locale .~ Locale(identifier: "en_US_POSIX")
-  |> \.timeZone .~ Current.calendarTimeZone()
+private let dateFormatter = DateFormatter()
+  |> iso8601
   |> \.calendar .~ Calendar(identifier: .iso8601)
-  |> \.dateFormat .~ "dd.MM.yyyy HH:mm"
+  |> \.timeZone .~ Current.calendarTimeZone()
+  |> \.dateFormat .~ "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+
