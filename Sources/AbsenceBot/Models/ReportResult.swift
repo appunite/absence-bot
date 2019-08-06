@@ -48,8 +48,13 @@ public struct ReportResult: Encodable {
       .firstRegexMatch(pattern: "(?<=-.)(\\w+)")
       .flatMap(Absence.Reason.init)
 
-    self.requesterName = event.attendees?.first?.displayName
-    self.requesterEmail = event.attendees?.first?.email
+    let requesterFromSummary = event.summary
+      .split(separator: "-")
+      .first?
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+
+    self.requesterName = event.attendees?.first?.displayName ?? requesterFromSummary
+    self.requesterEmail = event.attendees?.first?.email ?? requesterFromSummary
   }
 }
 
