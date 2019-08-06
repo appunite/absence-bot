@@ -11,7 +11,7 @@ import AbsenceBotTestSupport
 class ReportMiddlewareTests: TestCase {
   override func setUp() {
     super.setUp()
-    //    record = true
+//        record = true
   }
   
   func testBasicReportGeneration() {
