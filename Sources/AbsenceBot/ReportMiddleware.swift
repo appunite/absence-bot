@@ -73,4 +73,10 @@ private func fetchGoogleTokenMiddleware(
 
 private let reportJsonEncoder = JSONEncoder()
   |> \.dateEncodingStrategy .~ .secondsSince1970
+  |> dateEncodingStrategy
   |> sortedKeysOutputFormatting
+
+public let dateEncodingStrategy = \JSONEncoder.dateEncodingStrategy %~ {
+  guard #available(OSX 10.12, *) else { return $0 }
+  return .iso8601
+}

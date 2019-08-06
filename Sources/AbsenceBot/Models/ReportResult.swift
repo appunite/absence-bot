@@ -6,8 +6,8 @@ public struct ReportResult: Encodable {
   public var id: String?
 
   /// Defines who is requesting for absence
-  public var requester: String?
-  public var reviewer: String?
+  public var requesterName: String?
+  public var requesterEmail: String?
   
   /// Defines when absence is requested
   public var start: Date?
@@ -48,15 +48,8 @@ public struct ReportResult: Encodable {
       .firstRegexMatch(pattern: "(?<=-.)(\\w+)")
       .flatMap(Absence.Reason.init)
 
-    self.requester = event.summary
-      .split(separator: "-")
-      .first?
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-    
-    self.reviewer = event.attendees?
-      .filter { $0.email != self.requester }
-      .first
-      .flatMap(^\.displayName) ?? "<unknown>"
+    self.requesterName = event.attendees?.first?.displayName
+    self.requesterEmail = event.attendees?.first?.email
   }
 }
 
